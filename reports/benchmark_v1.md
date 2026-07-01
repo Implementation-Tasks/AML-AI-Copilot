@@ -1,6 +1,6 @@
 # 📊 AML AI Copilot — Benchmark Report
 
-**Date:** 2026-06-26 02:40 UTC  
+**Date:** 2026-06-28 06:40 UTC  
 **Dataset:** Synthetic (scale-free graph, 300 labelled nodes)  
 **F-β parameter:** β = 0.5 (Precision weighted 2× over Recall)
 
@@ -8,9 +8,9 @@
 
 | Model | Precision | Recall | F-β (β=0.5) | FPR | Runtime |
 |-------|-----------|--------|-------------|-----|--------|
-| **XGBoost** 🏆 | 1.000 | 1.000 | 1.000 | **0.000** | 0.13s |
-| **RandomForest** | 1.000 | 1.000 | 1.000 | **0.000** | 0.19s |
-| **QUBO-Optimizer** | 1.000 | 0.625 | 0.893 | **0.000** | 0.04s |
+| **XGBoost** 🏆 | 1.000 | 1.000 | 1.000 | **0.000** | 0.50s |
+| **RandomForest** | 1.000 | 1.000 | 1.000 | **0.000** | 0.42s |
+| **QUBO-Optimizer** | 1.000 | 0.625 | 0.893 | **0.000** | 0.12s |
 | **GraphSAGE** | 0.280 | 0.875 | 0.324 | **0.196** | 0.50s |
 | **GAT** | 0.280 | 0.875 | 0.324 | **0.196** | 0.50s |
 

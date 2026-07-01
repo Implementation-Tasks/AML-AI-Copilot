@@ -1,0 +1,448 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "AML AI Copilot",
+    "languages": ["python", "html", "markdown", "json"],
+    "frameworks": ["FastAPI", "CrewAI", "NetworkX", "NumPy", "Pydantic", "uvicorn"],
+    "description": "Quantum-Inspired Crypto AML (Anti-Money Laundering) Platform for Southeast Asia. Combines QUBO graph optimization with a 3-agent CrewAI pipeline to detect illicit blockchain transactions with near-zero false positives.",
+    "analyzedAt": "2026-06-29T08:17:00Z",
+    "gitCommitHash": "475ea4861eabe40ff54b57d5a7d3083602c37d18"
+  },
+  "nodes": [
+    {
+      "id": "file:server.py",
+      "type": "file",
+      "name": "server.py",
+      "filePath": "server.py",
+      "summary": "FastAPI backend entry point. Exposes /api/screen (full 3-agent AML pipeline) and /api/benchmark (QUBO benchmarking) endpoints. Serves the demo UI at /. Mounts CORS middleware and static file serving.",
+      "tags": ["api", "fastapi", "entrypoint", "rest", "uvicorn"],
+      "complexity": "simple"},
+    {
+      "id": "file:src/models.py",
+      "type": "file",
+      "name": "models.py",
+      "filePath": "src/models.py",
+      "summary": "Shared data contracts for the entire platform (13 dataclasses). Defines TransactionGraph, AgentInput, PipelineResult, QUBOResult, OptimizationResult, FlowTraceResult, ThreatIntelResult, ComplianceReport, and supporting types. Single source of truth for all inter-module data exchange.",
+      "tags": ["models", "dataclasses", "contracts", "types", "shared"],
+      "complexity": "moderate"},
+    {
+      "id": "file:src/config.py",
+      "type": "file",
+      "name": "config.py",
+      "filePath": "src/config.py",
+      "summary": "Centralized configuration loaded from environment variables. Defines API keys (Etherscan, OpenSanctions, Anthropic, OpenAI, Quapp), quantum backend selection, agent settings, AML thresholds (QUBO_RISK_THRESHOLD=0.85, F_BETA=0.5), and data paths.",
+      "tags": ["config", "environment", "settings", "api-keys"],
+      "complexity": "simple"},
+    {
+      "id": "file:src/security.py",
+      "type": "file",
+      "name": "security.py",
+      "filePath": "src/security.py",
+      "summary": "Security hardening module: wallet address validation (EIP-55 ETH, BTC formats), PII masking for logs, token-bucket RateLimiter for API calls, SHA-256 audit hash computation, and automated security checklist. Implements pre-configured limiters for Etherscan, OpenSanctions, and Dune APIs.",
+      "tags": ["security", "validation", "rate-limiting", "pii", "audit", "hash"],
+      "complexity": "moderate"},
+    {
+      "id": "file:src/observability.py",
+      "type": "file",
+      "name": "observability.py",
+      "filePath": "src/observability.py",
+      "summary": "Observability and instrumentation module: JSON structured logging formatter, trace context manager for distributed tracing (UUID-based trace IDs), in-process metrics (counters, gauges, histograms), and @timed decorator for latency tracking.",
+      "tags": ["observability", "logging", "metrics", "tracing", "instrumentation"],
+      "complexity": "moderate"},
+    {
+      "id": "file:src/quantum/graph_to_qubo.py",
+      "type": "file",
+      "name": "graph_to_qubo.py",
+      "filePath": "src/quantum/graph_to_qubo.py",
+      "summary": "Core QUBO mapping engine (P0 critical). Converts blockchain transaction graphs (NetworkX DiGraph) into QUBO matrices. Extracts node risk scores from topology (fan-in/fan-out patterns, mixer/bridge flags, tx velocity). Builds the quadratic cost function C(x) = -Σ(risk×x) + λ×Σ(coupling×xi×xj). Also provides F-β score computation and binary solution evaluation.",
+      "tags": ["qubo", "quantum", "graph", "matrix", "optimization", "risk-scoring"],
+      "complexity": "complex"},
+    {
+      "id": "file:src/quantum/hybrid_optimizer.py",
+      "type": "file",
+      "name": "hybrid_optimizer.py",
+      "filePath": "src/quantum/hybrid_optimizer.py",
+      "summary": "Hardware-agnostic QUBO optimizer class HybridQuantumOptimizer. Supports three backends: Qamelion (Qudora trapped-ion emulator), Perceval (Quandela photonic SDK), and classical Simulated Annealing (NumPy fallback). Auto-falls back to classical if quantum SDK unavailable. Full pipeline: TransactionGraph → QUBO → Solve → Evaluate → OptimizationResult.",
+      "tags": ["optimizer", "quantum", "simulated-annealing", "backend", "hybrid", "qamelion", "perceval"],
+      "complexity": "complex"},
+    {
+      "id": "file:src/quantum/benchmark.py",
+      "type": "file",
+      "name": "benchmark.py",
+      "filePath": "src/quantum/benchmark.py",
+      "summary": "Model comparison benchmark suite. Tests QUBO optimizer against GraphSAGE, GAT, XGBoost, and RandomForest on synthetic scale-free graphs (IBM AMLSim patterns). Measures False Positive Rate, F-β score (β=0.5), and graph-native capabilities. Generates benchmark_v1.md reports.",
+      "tags": ["benchmark", "evaluation", "comparison", "machine-learning", "metrics"],
+      "complexity": "complex"},
+    {
+      "id": "file:src/agents/multi_agent_crew.py",
+      "type": "file",
+      "name": "multi_agent_crew.py",
+      "filePath": "src/agents/multi_agent_crew.py",
+      "summary": "3-agent CrewAI pipeline orchestrator. Agent 1 (Flow Tracer): traces multi-hop cash flows via Etherscan+BSCScan+The Graph. Agent 2 (OSINT Analyst): cross-references OFAC/EU/UN sanctions + CryptoScamDB. Agent 3 (Compliance Officer): synthesizes findings into risk level (HIGH/MEDIUM/LOW), recommended action (FREEZE/MONITOR/CLEAR), and SHA-256 audit-ready ComplianceReport.",
+      "tags": ["agents", "crewai", "pipeline", "compliance", "aml", "orchestration"],
+      "complexity": "complex"},
+    {
+      "id": "file:src/tools/agent_tools.py",
+      "type": "file",
+      "name": "agent_tools.py",
+      "filePath": "src/tools/agent_tools.py",
+      "summary": "Agent tool implementations: EtherscanAPITool (ETH+BSC transaction tracing), GraphQueryTool (DeFi/Tornado Cash pattern detection via The Graph), OpenSanctionsTool (sanctions database lookup), CryptoScamDBTool (scam address blacklist check), ReportGeneratorTool (JSON report writer with SHA-256 hash).",
+      "tags": ["tools", "etherscan", "sanctions", "scamdb", "report", "api-clients"],
+      "complexity": "complex"},
+    {
+      "id": "file:src/tools/opensanctions_client.py",
+      "type": "file",
+      "name": "opensanctions_client.py",
+      "filePath": "src/tools/opensanctions_client.py",
+      "summary": "OpenSanctions API client implementation. Queries OFAC SDN, EU sanctions, UN sanctions, and PEPs lists for wallet address matches. Handles authentication, pagination, confidence scoring, and rate limiting.",
+      "tags": ["opensanctions", "api-client", "sanctions", "ofac", "kyc"],
+      "complexity": "moderate"},
+    {
+      "id": "file:src/data/elliptic_loader.py",
+      "type": "file",
+      "name": "elliptic_loader.py",
+      "filePath": "src/data/elliptic_loader.py",
+      "summary": "Elliptic Bitcoin dataset loader. Loads the 203,769-transaction Elliptic dataset (elliptic_txs_features.csv + elliptic_txs_classes.csv), builds a NetworkX transaction graph with labeled illicit/licit wallets for benchmark training and evaluation.",
+      "tags": ["data", "elliptic", "bitcoin", "dataset", "loader", "networkx"],
+      "complexity": "moderate"},
+    {
+      "id": "file:demo/index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "demo/index.html",
+      "summary": "POC Demo UI — single-page web application. Provides wallet address input, QUBO risk threshold slider, benchmark runner, and displays AML analysis results including risk level badge, flow trace visualization, sanctions hits, scam score, and audit hash. Served by FastAPI at /.",
+      "tags": ["ui", "demo", "frontend", "html", "poc"],
+      "complexity": "moderate"},
+    {
+      "id": "file:tests/test_qubo_mapping.py",
+      "type": "file",
+      "name": "test_qubo_mapping.py",
+      "filePath": "tests/test_qubo_mapping.py",
+      "summary": "19 unit tests for the QUBO mapping layer. Covers: graph-to-QUBO conversion correctness, risk score extraction, edge coupling computation, F-β score calculation, solution evaluation, empty graph edge cases, and QUBO_MAX_NODES limit enforcement.",
+      "tags": ["tests", "unit-tests", "qubo", "pytest"],
+      "complexity": "moderate"},
+    {
+      "id": "file:tests/test_agents.py",
+      "type": "file",
+      "name": "test_agents.py",
+      "filePath": "tests/test_agents.py",
+      "summary": "9 unit tests for the 3-agent pipeline. Covers: run_aml_crew integration flow, risk level determination (HIGH/MEDIUM/LOW), recommended action mapping (FREEZE/MONITOR/CLEAR), flow tracer with mock API responses, OSINT analyst sanctions parsing, and ComplianceReport completeness.",
+      "tags": ["tests", "unit-tests", "agents", "pytest", "integration"],
+      "complexity": "moderate"},
+    {
+      "id": "file:README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "README.md",
+      "summary": "Project documentation: describes the AML problem (90% FPR in SEA crypto exchanges), solution architecture (QUBO + CrewAI agents + Quapp.cloud), benchmark results (QUBO FPR=0% vs GraphSAGE 19.6%), quick start guide, environment variables reference, quantum backends table, and roadmap.",
+      "tags": ["documentation", "readme", "architecture", "benchmark"],
+      "complexity": "simple"},
+    {
+      "id": "file:.env.example",
+      "type": "config",
+      "name": ".env.example",
+      "filePath": ".env.example",
+      "summary": "Environment configuration template. Documents all required API keys: ETHERSCAN_API_KEY, OPENSANCTIONS_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, QUAPP_API_KEY, DUNE_API_KEY, and runtime settings: QUANTUM_BACKEND, LLM_MODEL, QUBO_RISK_THRESHOLD, F_BETA.",
+      "tags": ["config", "environment", "template", "api-keys"],
+      "complexity": "simple"},
+    {
+      "id": "file:requirements.txt",
+      "type": "config",
+      "name": "requirements.txt",
+      "filePath": "requirements.txt",
+      "summary": "Python dependencies: fastapi, uvicorn, pydantic, crewai, networkx, numpy, python-dotenv, httpx, anthropic, openai.",
+      "tags": ["dependencies", "python", "requirements"],
+      "complexity": "simple"},
+    {
+      "id": "file:docs/LOI_Executive_Summary.md",
+      "type": "document",
+      "name": "LOI_Executive_Summary.md",
+      "filePath": "docs/LOI_Executive_Summary.md",
+      "summary": "Letter of Intent executive summary for potential partnerships with SEA crypto exchanges. Outlines platform capabilities, business value proposition, and partnership terms.",
+      "tags": ["documentation", "business", "loi", "partnership"],
+      "complexity": "simple"},
+    {
+      "id": "file:docs/specs/spec_multi_agent.md",
+      "type": "document",
+      "name": "spec_multi_agent.md",
+      "filePath": "docs/specs/spec_multi_agent.md",
+      "summary": "Technical specification for the 3-agent CrewAI pipeline: agent responsibilities, inter-agent data contracts, tool usage, timeout handling, and retry logic.",
+      "tags": ["documentation", "spec", "agents", "design"],
+      "complexity": "simple"},
+    {
+      "id": "file:docs/specs/spec_orchestration.md",
+      "type": "document",
+      "name": "spec_orchestration.md",
+      "filePath": "docs/specs/spec_orchestration.md",
+      "summary": "Orchestration specification: Quapp.cloud async middleware integration, HPC+QaaS coordination, async job queuing, and result aggregation patterns.",
+      "tags": ["documentation", "spec", "orchestration", "quapp"],
+      "complexity": "simple"},
+    {
+      "id": "file:docs/specs/spec_quantum_backend.md",
+      "type": "document",
+      "name": "spec_quantum_backend.md",
+      "filePath": "docs/specs/spec_quantum_backend.md",
+      "summary": "Quantum backend specification: QUBO problem formulation, Qamelion (trapped-ion) integration, Perceval (photonic) integration, and classical SimulatedAnnealing fallback algorithm details.",
+      "tags": ["documentation", "spec", "quantum", "qubo", "backend"],
+      "complexity": "simple"},
+    {
+      "id": "class:HybridQuantumOptimizer",
+      "type": "class",
+      "name": "HybridQuantumOptimizer",
+      "filePath": "src/quantum/hybrid_optimizer.py",
+      "summary": "Hardware-agnostic QUBO optimizer class. Manages backend selection (Qudora/Quandela/Classical), initializes the appropriate quantum SDK, dispatches QUBO solve with timeout handling, auto-falls back to classical SimulatedAnnealing. Main method: optimize(tx_graph) → OptimizationResult.",
+      "tags": ["class", "optimizer", "quantum", "backend-agnostic"],
+      "complexity": "complex"},
+    {
+      "id": "func:map_graph_to_qubo",
+      "type": "function",
+      "name": "map_graph_to_qubo",
+      "filePath": "src/quantum/graph_to_qubo.py",
+      "summary": "Converts TransactionGraph → QUBOResult. Builds N×N QUBO matrix with diagonal risk terms and off-diagonal coupling terms. Penalizes known-licit nodes. Returns matrix, variable_mapping, and estimated ground-state energy.",
+      "tags": ["function", "qubo", "matrix-building", "core"],
+      "complexity": "complex"},
+    {
+      "id": "func:run_aml_crew",
+      "type": "function",
+      "name": "run_aml_crew",
+      "filePath": "src/agents/multi_agent_crew.py",
+      "summary": "Main AML crew orchestrator. Sequentially runs all 3 agents: FlowTracer → OSINTAnalyst → ComplianceOfficer. Returns audit-ready ComplianceReport with SHA-256 hash, risk level, and action recommendation.",
+      "tags": ["function", "orchestrator", "pipeline", "entrypoint"],
+      "complexity": "moderate"},
+    {
+      "id": "class:RateLimiter",
+      "type": "class",
+      "name": "RateLimiter",
+      "filePath": "src/security.py",
+      "summary": "Token-bucket rate limiter for external API calls. Configurable max_calls per window_seconds. Used as decorator or context manager. Pre-configured instances for Etherscan (5/s), OpenSanctions (10/s), Dune (2/s).",
+      "tags": ["class", "rate-limiting", "security", "api"],
+      "complexity": "simple"},
+    {
+      "id": "class:Metrics",
+      "type": "class",
+      "name": "Metrics",
+      "filePath": "src/observability.py",
+      "summary": "In-process metrics singleton. Tracks counters, gauges, and histograms. Provides timer() context manager for latency recording and summary() for Prometheus-compatible export.",
+      "tags": ["class", "metrics", "observability", "prometheus"],
+      "complexity": "moderate"},
+    {
+      "id": "class:JSONFormatter",
+      "type": "class",
+      "name": "JSONFormatter",
+      "filePath": "src/observability.py",
+      "summary": "Structured JSON log formatter for log aggregation systems (ELK, CloudWatch). Outputs single-line JSON with timestamp, level, logger name, message, trace_id, and extra fields.",
+      "tags": ["class", "logging", "json", "structured-logging"],
+      "complexity": "simple"}
+  ],
+  "edges": [
+    { "source": "file:server.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:server.py", "target": "file:src/agents/multi_agent_crew.py", "type": "imports" },
+    { "source": "file:server.py", "target": "file:src/quantum/hybrid_optimizer.py", "type": "imports" },
+    { "source": "file:server.py", "target": "file:src/security.py", "type": "imports" },
+    { "source": "file:server.py", "target": "file:src/observability.py", "type": "imports" },
+    { "source": "file:server.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/agents/multi_agent_crew.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:src/agents/multi_agent_crew.py", "target": "file:src/tools/agent_tools.py", "type": "imports" },
+    { "source": "file:src/agents/multi_agent_crew.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/agents/multi_agent_crew.py", "target": "file:src/observability.py", "type": "imports" },
+    { "source": "file:src/agents/multi_agent_crew.py", "target": "file:src/quantum/graph_to_qubo.py", "type": "imports" },
+    { "source": "file:src/quantum/graph_to_qubo.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:src/quantum/graph_to_qubo.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/quantum/hybrid_optimizer.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:src/quantum/hybrid_optimizer.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/quantum/hybrid_optimizer.py", "target": "file:src/quantum/graph_to_qubo.py", "type": "imports" },
+    { "source": "file:src/quantum/benchmark.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:src/quantum/benchmark.py", "target": "file:src/quantum/hybrid_optimizer.py", "type": "imports" },
+    { "source": "file:src/quantum/benchmark.py", "target": "file:src/data/elliptic_loader.py", "type": "imports" },
+    { "source": "file:src/tools/agent_tools.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:src/tools/agent_tools.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/tools/agent_tools.py", "target": "file:src/tools/opensanctions_client.py", "type": "imports" },
+    { "source": "file:src/tools/agent_tools.py", "target": "file:src/security.py", "type": "imports" },
+    { "source": "file:src/tools/opensanctions_client.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/data/elliptic_loader.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:src/data/elliptic_loader.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/security.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:src/observability.py", "target": "file:src/config.py", "type": "imports" },
+    { "source": "file:tests/test_qubo_mapping.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:tests/test_qubo_mapping.py", "target": "file:src/quantum/graph_to_qubo.py", "type": "imports" },
+    { "source": "file:tests/test_qubo_mapping.py", "target": "file:src/quantum/hybrid_optimizer.py", "type": "imports" },
+    { "source": "file:tests/test_agents.py", "target": "file:src/models.py", "type": "imports" },
+    { "source": "file:tests/test_agents.py", "target": "file:src/agents/multi_agent_crew.py", "type": "imports" },
+    { "source": "file:tests/test_agents.py", "target": "file:src/tools/agent_tools.py", "type": "imports" },
+    { "source": "file:src/quantum/graph_to_qubo.py", "target": "func:map_graph_to_qubo", "type": "defines" },
+    { "source": "file:src/quantum/hybrid_optimizer.py", "target": "class:HybridQuantumOptimizer", "type": "defines" },
+    { "source": "file:src/agents/multi_agent_crew.py", "target": "func:run_aml_crew", "type": "defines" },
+    { "source": "file:src/security.py", "target": "class:RateLimiter", "type": "defines" },
+    { "source": "file:src/observability.py", "target": "class:Metrics", "type": "defines" },
+    { "source": "file:src/observability.py", "target": "class:JSONFormatter", "type": "defines" },
+    { "source": "class:HybridQuantumOptimizer", "target": "func:map_graph_to_qubo", "type": "calls" },
+    { "source": "func:run_aml_crew", "target": "class:HybridQuantumOptimizer", "type": "uses" },
+    { "source": "file:server.py", "target": "func:run_aml_crew", "type": "calls" },
+    { "source": "file:README.md", "target": "file:server.py", "type": "documents" },
+    { "source": "file:README.md", "target": "file:src/quantum/hybrid_optimizer.py", "type": "documents" },
+    { "source": "file:README.md", "target": "file:src/agents/multi_agent_crew.py", "type": "documents" },
+    { "source": "file:docs/specs/spec_multi_agent.md", "target": "file:src/agents/multi_agent_crew.py", "type": "documents" },
+    { "source": "file:docs/specs/spec_quantum_backend.md", "target": "file:src/quantum/hybrid_optimizer.py", "type": "documents" },
+    { "source": "file:docs/specs/spec_orchestration.md", "target": "file:server.py", "type": "documents" },
+    { "source": "file:.env.example", "target": "file:src/config.py", "type": "configures" },
+    { "source": "file:requirements.txt", "target": "file:src/agents/multi_agent_crew.py", "type": "configures" },
+    { "source": "file:tests/test_qubo_mapping.py", "target": "file:src/quantum/graph_to_qubo.py", "type": "tested_by" },
+    { "source": "file:tests/test_agents.py", "target": "file:src/agents/multi_agent_crew.py", "type": "tested_by" }
+  ],
+  "layers": [
+    {
+      "id": "layer:api",
+      "name": "API Layer",
+      "description": "HTTP endpoints and server infrastructure. Entry point for external clients.",
+      "nodeIds": ["file:server.py", "file:demo/index.html"]
+    },
+    {
+      "id": "layer:quantum-engine",
+      "name": "Quantum Engine",
+      "description": "QUBO formulation, quantum backend integration, and optimization algorithms.",
+      "nodeIds": [
+        "file:src/quantum/graph_to_qubo.py",
+        "file:src/quantum/hybrid_optimizer.py",
+        "file:src/quantum/benchmark.py",
+        "func:map_graph_to_qubo",
+        "class:HybridQuantumOptimizer"
+      ]
+    },
+    {
+      "id": "layer:agents",
+      "name": "Agent Pipeline",
+      "description": "Multi-agent orchestration: Flow Tracer, OSINT Analyst, and Compliance Officer.",
+      "nodeIds": [
+        "file:src/agents/multi_agent_crew.py",
+        "func:run_aml_crew"
+      ]
+    },
+    {
+      "id": "layer:tools",
+      "name": "Agent Tools",
+      "description": "External API clients and data retrieval tools used by agents.",
+      "nodeIds": [
+        "file:src/tools/agent_tools.py",
+        "file:src/tools/opensanctions_client.py"
+      ]
+    },
+    {
+      "id": "layer:data",
+      "name": "Data Layer",
+      "description": "Dataset loading and blockchain data access.",
+      "nodeIds": ["file:src/data/elliptic_loader.py"]
+    },
+    {
+      "id": "layer:shared",
+      "name": "Shared Infrastructure",
+      "description": "Cross-cutting concerns: data contracts, configuration, security, and observability.",
+      "nodeIds": [
+        "file:src/models.py",
+        "file:src/config.py",
+        "file:src/security.py",
+        "file:src/observability.py",
+        "class:RateLimiter",
+        "class:Metrics",
+        "class:JSONFormatter"
+      ]
+    },
+    {
+      "id": "layer:tests",
+      "name": "Test Suite",
+      "description": "Automated tests: 19 QUBO tests + 9 agent tests = 28 total.",
+      "nodeIds": [
+        "file:tests/test_qubo_mapping.py",
+        "file:tests/test_agents.py"
+      ]
+    },
+    {
+      "id": "layer:config-docs",
+      "name": "Configuration & Documentation",
+      "description": "Project configuration, environment setup, and technical documentation.",
+      "nodeIds": [
+        "file:README.md",
+        "file:.env.example",
+        "file:requirements.txt",
+        "file:docs/LOI_Executive_Summary.md",
+        "file:docs/specs/spec_multi_agent.md",
+        "file:docs/specs/spec_orchestration.md",
+        "file:docs/specs/spec_quantum_backend.md"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Project Overview",
+      "description": "Start with the README to understand the AML problem space: 90% false positive rate in Southeast Asian crypto exchanges. QUBO optimization + CrewAI agents solve this with near-zero FPR.",
+      "nodeIds": ["file:README.md"]
+    },
+    {
+      "order": 2,
+      "title": "Data Contracts — The Foundation",
+      "description": "All modules share data types defined in models.py: 13 dataclasses that form the backbone of the entire platform. TransactionGraph flows into the quantum layer; ComplianceReport exits the agent layer.",
+      "nodeIds": ["file:src/models.py"]
+    },
+    {
+      "order": 3,
+      "title": "Configuration & Environment",
+      "description": "config.py reads all settings from .env: API keys, quantum backend selection, AML thresholds (QUBO_RISK_THRESHOLD=0.85, F_BETA=0.5). Everything is configurable without code changes.",
+      "nodeIds": ["file:src/config.py", "file:.env.example"]
+    },
+    {
+      "order": 4,
+      "title": "QUBO Core — Graph to Matrix",
+      "description": "graph_to_qubo.py is the P0 critical module. It extracts risk scores from blockchain topology (fan-in/fan-out, mixer/bridge flags), builds the quadratic cost function, and converts the transaction graph to a QUBO matrix.",
+      "nodeIds": ["file:src/quantum/graph_to_qubo.py", "func:map_graph_to_qubo"]
+    },
+    {
+      "order": 5,
+      "title": "Quantum Optimization",
+      "description": "HybridQuantumOptimizer orchestrates solver dispatch: tries Qamelion (trapped-ion) or Perceval (photonic) first, falls back to classical Simulated Annealing. The full pipeline returns flagged wallets + FPR + F-β score.",
+      "nodeIds": ["file:src/quantum/hybrid_optimizer.py", "class:HybridQuantumOptimizer"]
+    },
+    {
+      "order": 6,
+      "title": "3-Agent AML Pipeline",
+      "description": "multi_agent_crew.py orchestrates the investigation: Agent 1 traces multi-hop flows via Etherscan+BSC. Agent 2 checks OFAC/EU/UN sanctions + CryptoScamDB. Agent 3 synthesizes all evidence into a FREEZE/MONITOR/CLEAR decision with SHA-256 audit hash.",
+      "nodeIds": ["file:src/agents/multi_agent_crew.py", "func:run_aml_crew"]
+    },
+    {
+      "order": 7,
+      "title": "Agent Tools — External APIs",
+      "description": "agent_tools.py provides the data retrieval backbone: Etherscan for on-chain transaction tracing, OpenSanctions for global sanctions screening, CryptoScamDB for blacklist checking, and ReportGeneratorTool for tamper-evident audit reports.",
+      "nodeIds": ["file:src/tools/agent_tools.py", "file:src/tools/opensanctions_client.py"]
+    },
+    {
+      "order": 8,
+      "title": "Security Hardening",
+      "description": "security.py implements defensive layers: EIP-55 wallet validation, PII masking in logs, RateLimiter (token-bucket) for API throttling, and SHA-256 audit hashing for compliance evidence integrity.",
+      "nodeIds": ["file:src/security.py", "class:RateLimiter"]
+    },
+    {
+      "order": 9,
+      "title": "Observability",
+      "description": "observability.py provides production-ready instrumentation: JSON structured logs for ELK/CloudWatch, UUID-based distributed tracing via trace_context(), and in-process Metrics for Prometheus-compatible export.",
+      "nodeIds": ["file:src/observability.py", "class:Metrics", "class:JSONFormatter"]
+    },
+    {
+      "order": 10,
+      "title": "FastAPI Server & Demo UI",
+      "description": "server.py ties everything together: /api/screen runs the full pipeline, /api/benchmark runs QUBO vs ML comparison. The demo/index.html UI provides an interactive POC for demonstrating the platform.",
+      "nodeIds": ["file:server.py", "file:demo/index.html"]
+    },
+    {
+      "order": 11,
+      "title": "Test Suite — 28 Tests",
+      "description": "19 QUBO tests verify matrix correctness, F-β scoring, and edge cases. 9 agent tests verify the 3-agent pipeline with mocked API responses. All 28 should pass.",
+      "nodeIds": ["file:tests/test_qubo_mapping.py", "file:tests/test_agents.py"]
+    },
+    {
+      "order": 12,
+      "title": "Benchmarking",
+      "description": "benchmark.py compares QUBO against GraphSAGE (industry standard), GAT, XGBoost, and RandomForest on synthetic scale-free graphs. Result: QUBO achieves 0% FPR vs GraphSAGE's 19.6%.",
+      "nodeIds": ["file:src/quantum/benchmark.py"]
+    }
+  ]
+}
+

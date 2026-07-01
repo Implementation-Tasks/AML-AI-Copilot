@@ -22,6 +22,7 @@ from src.config import (
     OPENSANCTIONS_API_KEY,
 )
 from src.models import ToolOutput
+from src.tools.opensanctions_client import OpenSanctionsClient
 
 logger = logging.getLogger(__name__)
 
@@ -75,10 +76,11 @@ class GraphQueryTool(BaseTool):
     Supports: Uniswap, Aave, Compound, Tornado Cash subgraphs.
     """
     name = "graph_query_tool"
+    # Updated to The Graph decentralized network (old hosted service deprecated 2024)
     SUBGRAPH_URLS = {
-        "uniswap_v3": "https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v3",
-        "tornado_cash": "https://api.thegraph.com/subgraphs/name/tornadocash/mainnet",
-        "aave_v3": "https://api.thegraph.com/subgraphs/name/aave/protocol-v3",
+        "uniswap_v3": "https://gateway.thegraph.com/api/deployments/id/QmZeCuoZeadgHkGwLwMeguyqUKz1WPWQYKcKyMCeQqGhsF",
+        "tornado_cash": "https://gateway.thegraph.com/api/deployments/id/QmNvA5GFNX8VTB1eEhv9FRMhBFsNsoBCg4kHFdBPdQ1zjx",
+        "aave_v3": "https://gateway.thegraph.com/api/deployments/id/Cd2gEDVeqnjBn1hSeqFMitw8Q1iiyV9FYUZkLNRcL87g",
     }
 
     def _execute(self, wallet_address: str, protocol: str = "uniswap_v3") -> ToolOutput:
@@ -176,37 +178,54 @@ class EtherscanAPITool(BaseTool):
 
 class OpenSanctionsTool(BaseTool):
     """
-    Match wallet address against OFAC, EU, UN, PEPs sanction lists
-    via OpenSanctions API.
+    Match wallet address / name against OFAC, EU, UN, PEPs sanction lists
+    via OpenSanctions API (yente 5.4.0).
+
+    Uses OpenSanctionsClient built from openapi.json.
+    Endpoint: POST /match/{dataset}  (EntityMatchQuery → EntityMatchResponse)
     """
     name = "opensanctions_tool"
-    API_BASE = "https://api.opensanctions.org"
 
-    def _execute(self, wallet_address: str) -> ToolOutput:
-        with httpx.Client(timeout=10.0) as client:
-            resp = client.get(
-                f"{self.API_BASE}/match/default",
-                params={"q": wallet_address, "api_key": OPENSANCTIONS_API_KEY, "limit": 10},
-            )
-            resp.raise_for_status()
-            data = resp.json()
+    def _execute(
+        self,
+        wallet_address: str,
+        dataset: str = "default",
+        threshold: float = 0.6,
+        schema: str = "LegalEntity",
+    ) -> ToolOutput:
+        client = OpenSanctionsClient(api_key=OPENSANCTIONS_API_KEY)
 
-        results = data.get("results", [])
-        hits = []
-        for r in results:
-            score = r.get("score", 0.0)
-            if score > 0.6:  # threshold
-                hits.append({
-                    "entity_name": r.get("caption", ""),
-                    "list_name": r.get("datasets", ["unknown"])[0],
-                    "confidence": score,
-                    "source_url": f"https://www.opensanctions.org/entities/{r.get('id', '')}",
-                })
+        # Use the typed client — maps to POST /match/{dataset}
+        match_result = client.match_wallet(
+            wallet_address=wallet_address,
+            dataset=dataset,
+            threshold=threshold,
+        )
+
+        hits = [
+            {
+                "entity_name": entity.caption,
+                "list_name": entity.datasets[0] if entity.datasets else "unknown",
+                "confidence": entity.score,
+                "is_confirmed_match": entity.match,   # True if score ≥ threshold
+                "topics": entity.topics,
+                "source_url": entity.source_url,
+                "explanations": entity.explanations,
+            }
+            for entity in match_result.results
+        ]
 
         return ToolOutput(
             success=True,
-            data={"wallet": wallet_address, "sanctions_hits": hits, "total_hits": len(hits)},
-            confidence_score=0.95 if hits else 0.5,
+            data={
+                "wallet": wallet_address,
+                "dataset": dataset,
+                "sanctions_hits": hits,
+                "total_hits": len(hits),
+                "has_confirmed_match": match_result.has_matches,
+                "best_score": match_result.best.score if match_result.best else 0.0,
+            },
+            confidence_score=0.95 if match_result.has_matches else 0.5,
             evidence_links=[h["source_url"] for h in hits],
         )
 
@@ -215,31 +234,53 @@ class OpenSanctionsTool(BaseTool):
 
 class CryptoScamDBTool(BaseTool):
     """
-    Check wallet against CryptoScamDB blacklist (phishing, rug-pull, malware).
+    Check wallet against GoPlus Security API — industry standard on-chain
+    address risk checker (replaces deprecated CryptoScamDB public API).
+    Covers: phishing, rug-pull, honeypot, mixer, sanctioned, darkweb.
+    Docs: https://docs.gopluslabs.io/reference/api-reference/address-security
     """
     name = "cryptoscamdb_tool"
-    API_BASE = "https://api.cryptoscamdb.org/v1"
+    # GoPlus: free tier, no API key needed for basic checks
+    API_BASE = "https://api.gopluslabs.io/api/v1"
 
-    def _execute(self, wallet_address: str) -> ToolOutput:
+    def _execute(self, wallet_address: str, chain_id: str = "1") -> ToolOutput:
+        """chain_id: 1=ETH, 56=BSC, 137=Polygon, 43114=Avalanche"""
         with httpx.Client(timeout=10.0) as client:
-            resp = client.get(f"{self.API_BASE}/check/{wallet_address}")
+            resp = client.get(
+                f"{self.API_BASE}/address_security/{wallet_address}",
+                params={"chain_id": chain_id},
+            )
             resp.raise_for_status()
             data = resp.json()
 
-        is_scam = data.get("success", False) and bool(data.get("result"))
-        scam_info = data.get("result", {})
-        categories = list(scam_info.keys()) if isinstance(scam_info, dict) else []
+        result = data.get("result", {})
+        # GoPlus flags — any "1" means flagged
+        risk_flags = {
+            "phishing_activities": result.get("phishing_activities", "0"),
+            "blacklist_doubt":     result.get("blacklist_doubt", "0"),
+            "stealing_attack":     result.get("stealing_attack", "0"),
+            "fake_token":          result.get("fake_token", "0"),
+            "honeypot_related":    result.get("honeypot_related_address", "0"),
+            "mixer":               result.get("mixer", "0"),
+            "sanctioned":          result.get("sanctioned", "0"),
+            "darkweb_transactions": result.get("darkweb_transactions", "0"),
+            "cybercrime":          result.get("cybercrime", "0"),
+            "money_laundering":    result.get("money_laundering", "0"),
+        }
+        categories = [flag for flag, val in risk_flags.items() if val == "1"]
+        is_scam = bool(categories)
 
         return ToolOutput(
             success=True,
             data={
                 "wallet": wallet_address,
+                "chain_id": chain_id,
                 "is_blacklisted": is_scam,
                 "categories": categories,
-                "raw": scam_info,
+                "raw": risk_flags,
             },
-            confidence_score=0.90 if is_scam else 0.70,
-            evidence_links=[f"https://cryptoscamdb.org/address/{wallet_address}"],
+            confidence_score=0.92 if is_scam else 0.75,
+            evidence_links=[f"https://gopluslabs.io/phishing-site/{wallet_address}"],
         )
 
 

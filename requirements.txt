@@ -2,41 +2,41 @@
 # Install: pip install -r requirements.txt
 
 # === Core ===
-python-dotenv>=1.0.0
-httpx>=0.27.0
-networkx>=3.3
-numpy>=1.26.0
+python-dotenv
+httpx
+networkx
+numpy
 
 # === AI Agents ===
-crewai>=0.28.0
-langchain>=0.2.0
-anthropic>=0.30.0
-openai>=1.30.0
+crewai
+langchain
+anthropic
+openai
 
 # === Quantum (install separately if needed) ===
 # quamelion-emulator  # Qudora Qamelion — contact Qudora for access
 # perceval-quandela>=0.11.0  # Quandela photonic SDK
-dimod>=0.12.0         # D-Wave QUBO formulation (pure Python, no QPU needed)
-qiskit>=1.1.0
+dimod         # D-Wave QUBO formulation (pure Python, no QPU needed)
+qiskit
 
 # === Data & ML ===
-pandas>=2.2.0
-scikit-learn>=1.5.0
-xgboost>=2.0.0
-torch>=2.3.0
-torch-geometric>=2.5.0  # GraphSAGE, GAT baselines
-dgl>=2.1.0              # Deep Graph Library
+pandas
+scikit-learn
+xgboost
+torch
+torch-geometric  # GraphSAGE, GAT baselines
+dgl              # Deep Graph Library
 
 # === API Clients ===
-requests>=2.32.0
+requests
 
 # === Reports & Output ===
-reportlab>=4.2.0        # PDF generation
-jinja2>=3.1.0           # Report templates
+reportlab        # PDF generation
+jinja2           # Report templates
 
 # === Dev & Testing ===
-pytest>=8.2.0
-pytest-asyncio>=0.23.0
-pytest-cov>=5.0.0
-ruff>=0.4.0
-mypy>=1.10.0
+pytest
+pytest-asyncio
+pytest-cov
+ruff
+mypy
