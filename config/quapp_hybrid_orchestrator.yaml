@@ -1,0 +1,168 @@
+# ============================================================
+# Quapp Hybrid Orchestrator Configuration
+# AML AI Copilot — QCFinOp Team · SEA Quantathon 2026
+# ============================================================
+# This YAML file is loaded by the Quapp.cloud platform during
+# Step 5 (Deploy) to configure the computational workflow that
+# routes tasks between Classical HPC workers and Quantum backends.
+#
+# Quapp reads this file from: config/quapp_hybrid_orchestrator.yaml
+# ============================================================
+
+function:
+  name: aml-copilot-hybrid
+  version: "1.0.0"
+  description: >
+    Hybrid Quantum-Agentic AML pipeline for crypto wallet risk scoring.
+    Combines QUBO quantum-inspired optimization with a 3-agent CrewAI
+    investigation crew to detect money laundering in Southeast Asia.
+  entrypoint: src/pipeline/handler.py   # Quapp Step 4: handler.py
+  runtime: python3.11
+  timeout_seconds: 600                  # Max 10 min per job
+  memory_mb: 4096
+
+# ── SDK & Backend Selection ────────────────────────────────────────────────────
+# Corresponds to Quapp Step 1 (Basic Info) — SDK selection.
+# All SDKs listed here are natively supported by the Quapp platform.
+
+sdk:
+  primary: dimod                        # D-Wave Ocean SDK for QUBO formulation
+  alternatives:
+    - qiskit                            # IBM Quantum gate-based (Quapp: IBM Quantum provider)
+    - pennylane                         # Variational quantum algorithms
+    - perceval                          # Quandela photonic SDK (Quapp: Quandela provider)
+
+# ── Computational Workflow ────────────────────────────────────────────────────
+# Defines the task routing between Classical HPC and Quantum backends.
+
+workflow:
+  mode: hybrid                          # "hybrid" | "classical" | "quantum_sim"
+
+  stages:
+    # Stage 1: Data ingestion and graph construction (Classical HPC)
+    - name: graph_build
+      type: classical
+      description: Build blockchain transaction graph from Etherscan + The Graph
+      workers: 4
+      timeout_seconds: 60
+
+    # Stage 2: QUBO formulation and optimization (Quantum / Classical fallback)
+    - name: qubo_optimize
+      type: quantum
+      description: Map graph to QUBO matrix and solve via quantum backend
+      backend_preference:
+        - qudora                        # 1st choice: Qamelion trapped-ion emulator
+        - quandela                      # 2nd choice: Perceval photonic SDK
+        - classical                     # Fallback: Simulated Annealing (NumPy)
+      fallback_to_simulator: true       # Always fall back — never block on QaaS
+      fallback_timeout_seconds: 30      # Switch to classical after 30s
+      shots: 1024                       # Default quantum circuit runs
+      qubo_max_nodes: 500               # Safety limit — see spec_quantum_backend.md
+
+    # Stage 3: Multi-agent investigation (Classical HPC — LLM + API calls)
+    - name: agent_investigation
+      type: classical
+      description: >
+        3-agent CrewAI pipeline: Flow Tracer → OSINT Analyst → Compliance Officer.
+        Activates only when qubo_risk_score >= risk_threshold (default 0.85).
+      workers: 2
+      timeout_seconds: 300
+      trigger:
+        condition: qubo_risk_score >= risk_threshold
+        risk_threshold: 0.85            # Matches QUBO_RISK_THRESHOLD in .env
+
+    # Stage 4: Report generation and audit hashing (Classical HPC)
+    - name: report_generation
+      type: classical
+      description: Generate SHA-256 audit-ready AML compliance report (SAR-ready)
+      workers: 1
+      timeout_seconds: 60
+
+# ── HPC Worker Configuration ──────────────────────────────────────────────────
+
+hpc:
+  total_workers: 8                      # Classical HPC worker pool
+  worker_image: python:3.11-slim
+  autoscale:
+    enabled: false                      # Manual scale for now — see open questions
+    min_workers: 2
+    max_workers: 16
+    scale_trigger_queue_depth: 10
+
+# ── Quantum Backend Configuration ─────────────────────────────────────────────
+# Maps to Quapp Job Invocation UI: Provider → Device → Shots
+
+quantum_backends:
+  - provider: Quapp                     # Default — classical SA or Qamelion
+    device: qamelion-emulator
+    sdk: dimod
+    noise_model: nisq_standard          # Qamelion NFQC® noise model
+    enabled: true
+
+  - provider: Quandela                  # Perceval photonic SDK
+    device: sim:clifford                # Photonic simulator
+    sdk: perceval
+    qpu_access: sponsored               # Quandela-sponsored — contact support (Win/Van)
+    enabled: true
+
+  - provider: IBM Quantum               # Qiskit gate-based
+    device: ibm_kyiv                    # or "simulator_statevector" for tests
+    sdk: qiskit
+    enabled: false                      # Enable after setting IBM_QUANTUM_TOKEN in .env
+
+# ── Environment & Secrets ─────────────────────────────────────────────────────
+# All secrets are injected at runtime from .env — never hardcoded here.
+# Set these in your Quapp Project's environment variable settings.
+
+env:
+  required:
+    - QUANTUM_BACKEND
+    - ANTHROPIC_API_KEY
+    - ETHERSCAN_API_KEY
+    - OPENSANCTIONS_API_KEY
+    - QUAPP_API_KEY
+  optional:
+    - IBM_QUANTUM_TOKEN                 # Required only if IBM Quantum provider is enabled
+    - OPENAI_API_KEY                    # Fallback LLM if Anthropic unavailable
+    - DUNE_API_KEY                      # For live Dune Analytics pipeline
+    - QUBO_RISK_THRESHOLD               # Default: 0.85
+    - F_BETA                            # Default: 0.5
+    - QUANTUM_TIMEOUT_SECONDS           # Default: 30
+
+# ── Observability ─────────────────────────────────────────────────────────────
+
+observability:
+  logging:
+    format: json                        # Structured JSON logs with trace_id
+    level: INFO
+  metrics:
+    enabled: true
+    export_interval_seconds: 30
+  tracing:
+    enabled: true
+    trace_id_header: X-Trace-ID         # Propagated across all pipeline stages
+
+# ── Retry & Resilience ────────────────────────────────────────────────────────
+
+resilience:
+  retry:
+    max_attempts: 3
+    backoff: exponential
+    base_delay_seconds: 1.0
+    max_delay_seconds: 30.0
+  circuit_breaker:
+    enabled: true
+    failure_threshold: 5
+    recovery_timeout_seconds: 60
+
+# ── Security ──────────────────────────────────────────────────────────────────
+
+security:
+  wallet_validation: eip55_checksum     # EIP-55 checksum enforced on all inputs
+  pii_masking: true                     # Mask wallet addresses in logs after hashing
+  audit_hash_algorithm: sha256          # SHA-256 for compliance report audit trail
+  no_hardcoded_secrets: true            # Enforced — all keys from .env only
+
+# ── Open Questions (from spec_orchestration.md) ───────────────────────────────
+# TODO: Confirm Quapp.cloud API key format with team before first deploy.
+# TODO: Determine HPC worker autoscaling threshold (currently hardcoded at 8).
