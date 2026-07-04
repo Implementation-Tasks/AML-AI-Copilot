@@ -6,6 +6,7 @@
 [![Tests](https://img.shields.io/badge/tests-28%2F28%20passed-brightgreen)](#)
 [![Python](https://img.shields.io/badge/python-3.14-blue)](#)
 [![License](https://img.shields.io/badge/license-MIT-purple)](#)
+[![Quapp](https://img.shields.io/badge/platform-Quapp.cloud-orange)](#)
 
 ---
 
@@ -24,7 +25,7 @@ Crypto exchanges in Southeast Asia face a **90% false positive rate** in AML ale
    - **OSINT Analyst** — cross-references OFAC, EU, UN sanctions + CryptoScamDB
    - **Compliance Officer** — generates SHA-256 audit-ready AML reports
 
-3. **Quapp.cloud Orchestration** — async middleware connecting Classical HPC + Quantum-as-a-Service
+3. **Quapp.cloud Orchestration** — the central Launchpad for Quantum Builders: async middleware connecting Classical HPC + Quantum-as-a-Service across Qamelion (Qudora), Perceval (Quandela), and IBM Quantum backends.
 
 ---
 
@@ -65,6 +66,9 @@ python -m src.quantum.benchmark --demo
 
 # 6. Open Demo UI
 # Open demo/index.html in your browser
+
+# 7. Deploy to Quapp.cloud
+# See "Quapp Platform Deployment" section below
 ```
 
 ---
@@ -84,12 +88,18 @@ AML-AI-Copilot/
 │   │   └── benchmark.py        # Model comparison suite
 │   ├── agents/
 │   │   └── multi_agent_crew.py # 3-agent pipeline
+│   ├── pipeline/
+│   │   ├── handler.py          # Quapp Function entrypoint (handler.py)
+│   │   ├── run.py              # CLI entrypoint + pipeline trigger
+│   │   └── orchestrator.py     # Quapp YAML loader + task dispatcher
 │   ├── tools/
 │   │   └── agent_tools.py      # Etherscan, OpenSanctions, ScamDB, Report tools
 │   ├── data/
 │   │   └── elliptic_loader.py  # Elliptic Bitcoin dataset loader
 │   ├── security.py             # Wallet validation, PII masking, rate limiting
 │   └── observability.py        # JSON logging, metrics, trace propagation
+├── config/
+│   └── quapp_hybrid_orchestrator.yaml  # Quapp YAML workflow config
 ├── tests/
 │   ├── test_qubo_mapping.py    # 19 QUBO tests
 │   └── test_agents.py          # 9 Agent tests
@@ -104,6 +114,112 @@ AML-AI-Copilot/
 ├── requirements.txt
 └── README.md
 ```
+
+---
+
+## Architecture
+
+```
+Wallet Address
+      │
+      ▼
+┌─────────────────────────────────────────┐
+│         Quapp.cloud Orchestrator        │  ← Central entry point: async
+│   (Launchpad for Quantum Builders)      │    middleware managing HPC + QaaS
+│   handler.py → quapp_orchestrator.yaml  │    project lifecycle & task dispatch
+└─────────────────┬───────────────────────┘
+                  │
+        ┌─────────▼─────────┐
+        │   QUBO Optimizer   │  ← Quantum-inspired graph optimization
+        │   (F-β, β=0.5)    │    Penalizes false positives in cost function
+        └─────────┬──────────┘
+                  │ risk_score > 0.85
+        ┌─────────▼──────────────────────────┐
+        │         CrewAI Agents              │
+        │  ┌──────────────────────────────┐  │
+        │  │ 1. Multi-hop Flow Tracer     │  │  ← Etherscan + The Graph
+        │  │ 2. OSINT & KYC Analyst       │  │  ← OpenSanctions + CryptoScamDB
+        │  │ 3. AI Compliance Officer     │  │  ← SAR-ready report + SHA-256
+        │  └──────────────────────────────┘  │
+        └────────────────────────────────────┘
+                  │
+        ┌─────────▼──────────┐
+        │  Compliance Report  │  ← Audit hash, FREEZE / MONITOR / CLEAR
+        └────────────────────┘
+```
+
+---
+
+## Quapp Platform Deployment
+
+> **Quapp.cloud** is the "Launchpad for Quantum Builders" — the platform through which the AML AI Copilot pipeline is packaged, deployed, and invoked as a serverless quantum function.
+
+### Step 1 — Basic Info
+Create a new **Function** on Quapp.cloud:
+- **Function name**: `aml-copilot-hybrid`
+- **Description**: Hybrid Quantum-Agentic AML pipeline — QUBO optimization + multi-agent investigation for crypto wallet risk scoring
+- **SDK**: Select from Quapp-supported SDKs: `Qiskit` | `PennyLane` | `D-Wave Ocean (dimod)` | `AWS Braket`
+
+### Step 2 — Method
+Choose **"Start from Scratch"** to use our custom `handler.py` entrypoint for full pipeline control, OR select a **Template** optimized for QUBO combinatorial problems (Step 3).
+
+### Step 3 — Template (if applicable)
+If using a template, select the **QUBO / Combinatorial Optimization** template as the closest match to our graph-based AML workload.
+
+### Step 4 — Review the Code
+Quapp expects two primary deployment artifacts in `src/pipeline/`:
+```
+src/pipeline/handler.py        # Function entrypoint — receives wallet input, dispatches pipeline
+requirements.txt               # Python dependencies (dimod, crewai, networkx, etc.)
+```
+
+The `handler.py` entrypoint signature:
+```python
+def handler(event: dict) -> dict:
+    """
+    Quapp Function entrypoint for AML AI Copilot pipeline.
+
+    Args:
+        event: {
+            "wallet_address": str,   # EIP-55 checksummed wallet
+            "backend": str,          # "classical" | "qamelion" | "perceval" | "ibm_quantum"
+            "shots": int,            # Number of quantum circuit runs (default: 1024)
+            "mode": str              # "hybrid" | "classical" | "quantum_sim"
+        }
+
+    Returns:
+        {
+            "risk_level": str,           # "HIGH" | "MEDIUM" | "LOW"
+            "recommended_action": str,   # "FREEZE" | "MONITOR" | "CLEAR"
+            "f_beta_score": float,
+            "audit_hash": str            # SHA-256 of compliance report
+        }
+    """
+    ...
+```
+
+### Step 5 — Deploy
+Deploy the Function with the **Hybrid Quantum-HPC computational workflow**:
+- Configure `quapp_hybrid_orchestrator.yaml` with HPC worker count and quantum backend selection
+- Set `fallback_to_simulator: true` for resilience when QaaS is unavailable
+- All pipeline events are logged as structured JSON with `trace_id`
+
+### Job Invocation
+After deployment, invoke the AML pipeline from the Quapp dashboard:
+
+1. Navigate to **Functions** in the left sidebar → select `aml-copilot-hybrid`
+2. Provide execution parameters:
+   - **Provider**: `Quapp` | `Quandela` | `IBM Quantum`
+   - **Device**: Select quantum device or simulator
+   - **Shots**: Number of quantum circuit runs (e.g., `1024`)
+   - **Input**: Wallet address (raw or from data source)
+3. Click **"Invoke"** — the new Job appears at the top of the jobs table for status tracking
+
+### Project & Team Setup
+- Each team member should be added to the **same Quapp project** (not the default shared project)
+- The project creator becomes the **Admin** and adds members via email address
+- Members must have an active Quapp account before they can be added
+- For **QPU runtime** access (Quandela-sponsored): contact the Quapp support team (Win / Van) via Discord
 
 ---
 
@@ -148,9 +264,26 @@ report = run_aml_crew(AgentInput(
     trace_id=str(uuid.uuid4()),
 ))
 
-print(f"Risk: {report.risk_level}")          # HIGH / MEDIUM / LOW
-print(f"Action: {report.recommended_action}")# FREEZE / MONITOR / CLEAR
+print(f"Risk: {report.risk_level}")           # HIGH / MEDIUM / LOW
+print(f"Action: {report.recommended_action}") # FREEZE / MONITOR / CLEAR
 print(f"Audit Hash: {report.audit_hash}")
+```
+
+### Quapp handler.py (Direct Invocation)
+
+```python
+from src.pipeline.handler import handler
+
+result = handler({
+    "wallet_address": "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b",
+    "backend": "classical",   # or "qamelion" | "perceval" | "ibm_quantum"
+    "shots": 1024,
+    "mode": "hybrid"
+})
+
+print(result["risk_level"])          # HIGH
+print(result["recommended_action"])  # FREEZE
+print(result["audit_hash"])          # sha256:...
 ```
 
 ---
@@ -159,54 +292,29 @@ print(f"Audit Hash: {report.audit_hash}")
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `QUANTUM_BACKEND` | `classical` \| `qudora` \| `quandela` | `classical` |
+| `QUANTUM_BACKEND` | `classical` \| `qamelion` \| `perceval` \| `ibm_quantum` | `classical` |
 | `ETHERSCAN_API_KEY` | etherscan.io API key | — |
 | `OPENSANCTIONS_API_KEY` | opensanctions.org API key | — |
 | `ANTHROPIC_API_KEY` | Claude API key (for LLM agents) | — |
 | `QUBO_RISK_THRESHOLD` | Flag wallets above this score | `0.85` |
 | `F_BETA` | β parameter (< 1 = prioritize Precision) | `0.5` |
-
----
-
-## Architecture
-
-```
-Wallet Address
-      │
-      ▼
-┌─────────────────────────────┐
-│   Quapp.cloud Orchestrator  │  ← Async middleware (HPC + QaaS)
-└─────────────┬───────────────┘
-              │
-      ┌───────▼────────┐
-      │ QUBO Optimizer │  ← Quantum-inspired graph optimization
-      │  (F-β, β=0.5)  │
-      └───────┬────────┘
-              │ risk_score > 0.85
-      ┌───────▼────────────────────────┐
-      │         CrewAI Agents          │
-      │  ┌──────────────────────────┐  │
-      │  │ 1. Multi-hop Flow Tracer │  │  ← Etherscan + The Graph
-      │  │ 2. OSINT & KYC Analyst   │  │  ← OpenSanctions + CryptoScamDB
-      │  │ 3. AI Compliance Officer │  │  ← SAR-ready report + SHA-256
-      │  └──────────────────────────┘  │
-      └────────────────────────────────┘
-              │
-      ┌───────▼────────┐
-      │ Compliance PDF │  ← Audit hash, FREEZE/MONITOR/CLEAR
-      └────────────────┘
-```
+| `QUAPP_API_KEY` | Quapp.cloud project API key | — |
+| `IBM_QUANTUM_TOKEN` | IBM Quantum Network token | — |
 
 ---
 
 ## Quantum Backends
 
-| Backend | Technology | Status |
-|---------|-----------|--------|
-| **Classical SA** | Simulated Annealing (NumPy) | ✅ Default |
-| **Qamelion** | Qudora Trapped-Ion Emulator | ✅ Ready (install SDK) |
-| **Perceval** | Quandela Photonic SDK | ✅ Ready (install SDK) |
-| **QPU** | Real quantum hardware | 🔜 Future |
+| Backend | Provider | Technology | Quapp Provider Name | Status |
+|---------|----------|-----------|---------------------|--------|
+| **Classical SA** | NumPy | Simulated Annealing | `Quapp` (default) | ✅ Default |
+| **Qamelion** | Qudora | Trapped-Ion Emulator (NFQC®) | `Quapp` | ✅ Ready (install SDK) |
+| **Perceval** | Quandela | Photonic SDK | `Quandela` | ✅ Ready (QPU-sponsored) |
+| **Qiskit** | IBM | Gate-based | `IBM Quantum` | ✅ Quapp-supported SDK |
+| **D-Wave Ocean** | D-Wave | Quantum Annealing (dimod) | `Quapp` | ✅ Included in requirements |
+| **QPU (real HW)** | Quandela | Real quantum hardware | `Quandela` | 🔜 Contact support |
+
+> **QPU Runtime Note:** Real QPU access is sponsored by Quandela. Contact the Quapp support team (Win / Van on Discord) to request QPU runtime credentials.
 
 ---
 
@@ -224,14 +332,16 @@ Wallet Address
 
 - [x] QUBO optimizer with F-β cost function
 - [x] 3-agent CrewAI pipeline
-- [x] Benchmark vs GraphSAGE/GAT/XGBoost
+- [x] Benchmark vs GraphSAGE / GAT / XGBoost
 - [x] POC Demo UI
 - [x] Security hardening + observability
+- [ ] **Deploy AML pipeline as Quapp Function** (`handler.py` → Quapp.cloud)
+- [ ] Quandela QPU runtime integration (contact support for access)
+- [ ] Qamelion trapped-ion hardware integration
 - [ ] Elliptic full dataset benchmark
 - [ ] Dune Analytics live data pipeline
 - [ ] arXiv preprint: "Hybrid Quantum-Agentic Architecture for Crypto AML"
 - [ ] LOI with SEA crypto exchange
-- [ ] Qamelion / Perceval QPU integration
 
 ---
 
