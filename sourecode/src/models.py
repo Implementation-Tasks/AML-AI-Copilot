@@ -126,6 +126,18 @@ class ThreatIntelResult:
 
 
 @dataclass
+class TravelRuleRecord:
+    """FATF Recommendation 16 — Travel Rule compliance record."""
+    tx_hash: str
+    originator_account: str
+    beneficiary_account: str
+    originator_vasp: Optional[str] = None
+    beneficiary_vasp: Optional[str] = None
+    transfer_amount_usd: float = 0.0
+    threshold_exceeded: bool = False
+
+
+@dataclass
 class ComplianceReport:
     """Final AML compliance report — Audit-ready."""
     case_id: str
@@ -138,6 +150,7 @@ class ComplianceReport:
     recall: float
     flow_trace: FlowTraceResult
     threat_intel: ThreatIntelResult
+    travel_rule_violations: list[TravelRuleRecord]
     recommended_action: str       # "FREEZE" | "MONITOR" | "CLEAR"
     summary: str
     pdf_url: Optional[str] = None

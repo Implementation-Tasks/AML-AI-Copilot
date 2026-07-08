@@ -12,7 +12,7 @@ import json
 import logging
 import time
 from abc import ABC, abstractmethod
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Optional
 
 import httpx
@@ -192,8 +192,8 @@ class EtherscanAPITool(BaseTool):
                 "hash":      tx.get("hash", ""),
                 "value_native": value_native,
                 "value_usd":    convert_native_to_usd(value_native, coin),  # ← Live price
-                "timestamp": datetime.utcfromtimestamp(
-                    int(tx.get("timeStamp", 0))
+                "timestamp": datetime.fromtimestamp(
+                    int(tx.get("timeStamp", 0)), timezone.utc
                 ).isoformat(),
                 "chain": chain,
             })
@@ -237,8 +237,8 @@ class EtherscanAPITool(BaseTool):
                     "hash":         tx.get("hash", ""),
                     "value_native": value_trx,
                     "value_usd":    convert_native_to_usd(value_trx, "trx"),
-                    "timestamp":    datetime.utcfromtimestamp(
-                        int(tx.get("timestamp", 0)) / 1000
+                    "timestamp":    datetime.fromtimestamp(
+                        int(tx.get("timestamp", 0)) / 1000, timezone.utc
                     ).isoformat(),
                     "chain": "tron",
                 })
@@ -395,7 +395,7 @@ class ReportGeneratorTool(BaseTool):
         case_id = case_data.get("case_id", f"AML-{int(time.time())}")
         report = {
             "case_id": case_id,
-            "generated_at": datetime.utcnow().isoformat() + "Z",
+            "generated_at": datetime.now(timezone.utc).isoformat() + "Z",
             "version": "1.0",
             "risk_level": case_data.get("risk_level", "UNKNOWN"),
             "qubo_risk_score": case_data.get("qubo_risk_score", 0.0),
@@ -403,6 +403,7 @@ class ReportGeneratorTool(BaseTool):
             "recommended_action": case_data.get("recommended_action", "MONITOR"),
             "flow_trace": case_data.get("flow_trace", {}),
             "threat_intel": case_data.get("threat_intel", {}),
+            "travel_rule_violations": case_data.get("travel_rule_violations", []),
             "summary": case_data.get("summary", ""),
         }
 
@@ -412,13 +413,104 @@ class ReportGeneratorTool(BaseTool):
         report["audit_hash"] = audit_hash
 
         # Save to file
-        out_path = Path(output_dir) / f"{case_id}.json"
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(report, indent=2))
+        out_path = Path(output_dir)
+        out_path.mkdir(parents=True, exist_ok=True)
+        
+        json_path = out_path / f"{case_id}.json"
+        json_path.write_text(json.dumps(report, indent=2))
+        
+        # Generate PDF (SAR format)
+        pdf_path = out_path / f"{case_id}.pdf"
+        pdf_generated = False
+        try:
+            self._generate_pdf(report, str(pdf_path))
+            pdf_generated = True
+        except ImportError:
+            logger.warning("[ReportGenerator] reportlab not installed; skipping PDF generation.")
+        except Exception as e:
+            logger.warning(f"[ReportGenerator] PDF generation failed: {e}")
+
+        final_path = pdf_path if pdf_generated else json_path
 
         return ToolOutput(
             success=True,
-            data={"report": report, "file_path": str(out_path)},
+            data={"report": report, "file_path": str(final_path)},
             confidence_score=1.0,
-            evidence_links=[str(out_path)],
+            evidence_links=[str(final_path)],
         )
+
+    def _generate_pdf(self, report: dict, output_path: str):
+        """Generate SAR-ready PDF following FinCEN/MAS format."""
+        from reportlab.lib.pagesizes import A4
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+
+        doc = SimpleDocTemplate(output_path, pagesize=A4)
+        styles = getSampleStyleSheet()
+        title_style = styles['Title']
+        h2 = styles['Heading2']
+        normal = styles['Normal']
+        
+        elements = []
+        
+        # Header
+        elements.append(Paragraph(f"Suspicious Activity Report (SAR) - {report['case_id']}", title_style))
+        elements.append(Spacer(1, 12))
+        
+        # Metadata
+        elements.append(Paragraph(f"<b>Generated At:</b> {report['generated_at']}", normal))
+        elements.append(Paragraph(f"<b>Audit Hash:</b> {report['audit_hash']}", normal))
+        elements.append(Spacer(1, 12))
+        
+        # Risk Summary
+        elements.append(Paragraph("1. Risk Assessment", h2))
+        risk_color = colors.red if report['risk_level'] == 'HIGH' else (colors.orange if report['risk_level'] == 'MEDIUM' else colors.green)
+        
+        data = [
+            ["Risk Level", "QUBO Risk Score", "F-Beta Score", "Recommended Action"],
+            [report['risk_level'], f"{report['qubo_risk_score']:.2f}", f"{report['f_beta_score']:.2f}", report['recommended_action']]
+        ]
+        t = Table(data, colWidths=[100, 100, 100, 150])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+            ('TEXTCOLOR', (0,0), (-1,0), colors.black),
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+            ('BOTTOMPADDING', (0,0), (-1,0), 12),
+            ('BACKGROUND', (0,1), (0,1), risk_color),
+            ('TEXTCOLOR', (0,1), (0,1), colors.whitesmoke if report['risk_level'] != 'LOW' else colors.black),
+            ('GRID', (0,0), (-1,-1), 1, colors.black)
+        ]))
+        elements.append(t)
+        elements.append(Spacer(1, 12))
+        
+        # Summary Text
+        elements.append(Paragraph("2. Executive Summary", h2))
+        elements.append(Paragraph(report['summary'], normal))
+        elements.append(Spacer(1, 12))
+        
+        # Travel Rule Violations
+        elements.append(Paragraph("3. FATF Travel Rule Violations (R.16)", h2))
+        violations = report.get('travel_rule_violations', [])
+        if violations:
+            v_data = [["Tx Hash", "Amount (USD)", "Originator", "Beneficiary"]]
+            for v in violations:
+                v_data.append([
+                    v.get('tx_hash', '')[:10] + '...',
+                    f"${v.get('amount_usd', 0):.2f}",
+                    v.get('originator', '')[:15] + '...',
+                    v.get('beneficiary', '')[:15] + '...'
+                ])
+            vt = Table(v_data, colWidths=[100, 80, 130, 130])
+            vt.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.lightgrey),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+                ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+                ('ALIGN', (1,1), (1,-1), 'RIGHT'),
+            ]))
+            elements.append(vt)
+        else:
+            elements.append(Paragraph("No FATF Travel Rule violations detected.", normal))
+            
+        doc.build(elements)

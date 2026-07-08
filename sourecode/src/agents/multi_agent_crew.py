@@ -13,7 +13,7 @@ import json
 import logging
 import time
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from src.config import (
@@ -33,6 +33,7 @@ from src.models import (
     SanctionMatch,
     ThreatIntelResult,
     ToolOutput,
+    TravelRuleRecord,
 )
 from src.tools.agent_tools import (
     CryptoScamDBTool,
@@ -91,7 +92,7 @@ def run_flow_tracer(wallet_address: str, trace_id: str) -> FlowTraceResult:
                     tx_hash=h["hash"],
                     amount_usd=h.get("value_eth", 0.0) * 3000,  # rough ETH/USD
                     chain=chain,
-                    timestamp=datetime.fromisoformat(h["timestamp"]) if h.get("timestamp") else datetime.utcnow(),
+                    timestamp=datetime.fromisoformat(h["timestamp"]) if h.get("timestamp") else datetime.now(timezone.utc),
                     via_mixer=bool(tornado_result.success and tornado_result.data.get("count", 0) > 0),
                     via_bridge=(chain == "bsc"),  # crossed to BSC = bridge
                 )
@@ -202,6 +203,26 @@ def run_compliance_officer(
     )
     f_beta = compute_f_beta(proxy_precision, proxy_recall, beta)
 
+    # ── Travel Rule (FATF R.16) Violations ────────────────────────────────────
+    # In SEA (MAS/OJK), crypto transfers > $1000 USD require Travel Rule information.
+    travel_rule_violations: list[TravelRuleRecord] = []
+    TRAVEL_RULE_THRESHOLD_USD = 1000.0
+
+    for hop in flow_trace.hops:
+        if hop.amount_usd > TRAVEL_RULE_THRESHOLD_USD:
+            # We assume on-chain unhosted wallets lack VASP originator/beneficiary info
+            travel_rule_violations.append(
+                TravelRuleRecord(
+                    tx_hash=hop.tx_hash,
+                    originator_account=hop.from_wallet,
+                    beneficiary_account=hop.to_wallet,
+                    originator_vasp=None,
+                    beneficiary_vasp=None,
+                    transfer_amount_usd=hop.amount_usd,
+                    threshold_exceeded=True,
+                )
+            )
+
     # ── Summary ───────────────────────────────────────────────────────────────
     summary_parts = [
         f"Wallet {agent_input.wallet_address} flagged with QUBO risk score {agent_input.qubo_risk_score:.2f}.",
@@ -216,10 +237,13 @@ def run_compliance_officer(
         summary_parts.append(f"🚨 SANCTIONS HIT: {', '.join(names)}.")
     if high_scam_score:
         summary_parts.append(f"🚨 CryptoScamDB score: {threat_intel.scam_score:.2f}.")
+    if travel_rule_violations:
+        summary_parts.append(f"⚠️ FATF Travel Rule violations: {len(travel_rule_violations)} txs > $1,000 without VASP data.")
+        
     summary_parts.append(f"Recommended action: {action}.")
     summary = " ".join(summary_parts)
 
-    case_id = f"AML-{datetime.utcnow().strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
+    case_id = f"AML-{datetime.now(timezone.utc).strftime('%Y%m%d')}-{str(uuid.uuid4())[:8].upper()}"
 
     # ── Generate Report File ──────────────────────────────────────────────────
     case_data = {
@@ -243,6 +267,15 @@ def run_compliance_officer(
             "scam_score": threat_intel.scam_score,
             "categories": threat_intel.scam_categories,
         },
+        "travel_rule_violations": [
+            {
+                "tx_hash": v.tx_hash,
+                "amount_usd": v.transfer_amount_usd,
+                "originator": v.originator_account,
+                "beneficiary": v.beneficiary_account
+            }
+            for v in travel_rule_violations
+        ],
         "summary": summary,
     }
 
@@ -256,7 +289,7 @@ def run_compliance_officer(
 
     return ComplianceReport(
         case_id=case_id,
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         wallet_address=agent_input.wallet_address,
         risk_level=risk_level,
         qubo_risk_score=agent_input.qubo_risk_score,
@@ -265,6 +298,7 @@ def run_compliance_officer(
         recall=round(proxy_recall, 4),
         flow_trace=flow_trace,
         threat_intel=threat_intel,
+        travel_rule_violations=travel_rule_violations,
         recommended_action=action,
         summary=summary,
         pdf_url=report_file,

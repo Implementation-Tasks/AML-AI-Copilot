@@ -14,6 +14,8 @@ from collections import defaultdict
 from functools import wraps
 from typing import Callable
 
+from web3 import Web3
+
 logger = logging.getLogger(__name__)
 
 
@@ -44,12 +46,11 @@ def validate_wallet_address(address: str, chain: str = "eth") -> str:
     address = address.strip()
 
     if chain in ("eth", "bsc"):
-        if not _ETH_ADDR_RE.match(address):
+        if not Web3.is_address(address):
             raise ValueError(
-                f"Invalid Ethereum/BSC address format: '{address}'. "
-                "Must be 0x followed by 40 hex characters."
+                f"Invalid Ethereum/BSC address format or checksum failed: '{address}'."
             )
-        return address.lower()
+        return Web3.to_checksum_address(address)
 
     if chain == "btc":
         if not _BTC_ADDR_RE.match(address):

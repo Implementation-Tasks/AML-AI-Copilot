@@ -35,5 +35,8 @@ F_BETA = float(os.getenv("F_BETA", "0.5"))  # β < 1 → Precision > Recall
 # === Data Paths ===
 DATA_DIR = BASE_DIR / "data"
 REPORTS_DIR = BASE_DIR / "reports"
-ELLIPTIC_DATASET_PATH = DATA_DIR / "elliptic_txs_features.csv"
-ELLIPTIC_LABELS_PATH = DATA_DIR / "elliptic_txs_classes.csv"
+
+ELLIPTIC_DIR = Path(r"C:\Users\ACE DUKE\OneDrive\Máy tính\XỬ LÝ\SEA QUANTATHON\AML-AI-Copilot 6.7\archive\elliptic_bitcoin_dataset")
+ELLIPTIC_DATASET_PATH = ELLIPTIC_DIR / "elliptic_txs_features.csv"
+ELLIPTIC_LABELS_PATH = ELLIPTIC_DIR / "elliptic_txs_classes.csv"
+ELLIPTIC_EDGES_PATH = ELLIPTIC_DIR / "elliptic_txs_edgelist.csv"

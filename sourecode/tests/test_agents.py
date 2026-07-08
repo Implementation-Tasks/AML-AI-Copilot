@@ -4,7 +4,7 @@ Skill: test-driven-development + debugging-and-error-recovery
 """
 import json
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -39,7 +39,7 @@ SAMPLE_FLOW_TRACE = FlowTraceResult(
             tx_hash="0xTX1",
             amount_usd=50_000,
             chain="eth",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             via_mixer=True,
         )
     ],

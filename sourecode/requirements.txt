@@ -6,6 +6,7 @@ python-dotenv
 httpx
 networkx
 numpy
+web3
 
 # === AI Agents ===
 crewai

@@ -18,7 +18,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
-from src.config import ELLIPTIC_DATASET_PATH, ELLIPTIC_LABELS_PATH
+from src.config import ELLIPTIC_DATASET_PATH, ELLIPTIC_LABELS_PATH, ELLIPTIC_EDGES_PATH
 from src.models import TransactionGraph
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 def load_elliptic_dataset(
     features_path: Optional[Path] = None,
     labels_path: Optional[Path] = None,
+    edges_path: Optional[Path] = None,
     max_rows: Optional[int] = None,
 ) -> TransactionGraph:
     """
@@ -35,6 +36,7 @@ def load_elliptic_dataset(
     Args:
         features_path: Path to elliptic_txs_features.csv
         labels_path:   Path to elliptic_txs_classes.csv
+        edges_path:    Path to elliptic_txs_edgelist.csv
         max_rows:      Limit rows for testing (None = full dataset)
 
     Returns:
@@ -42,14 +44,14 @@ def load_elliptic_dataset(
     """
     fp = Path(features_path or ELLIPTIC_DATASET_PATH)
     lp = Path(labels_path or ELLIPTIC_LABELS_PATH)
+    ep = Path(edges_path or ELLIPTIC_EDGES_PATH)
 
     if not fp.exists():
-        raise FileNotFoundError(
-            f"Elliptic features file not found: {fp}\n"
-            "Download from: https://www.kaggle.com/datasets/ellipticco/elliptic-data-set"
-        )
+        raise FileNotFoundError(f"Elliptic features file not found: {fp}")
     if not lp.exists():
         raise FileNotFoundError(f"Elliptic labels file not found: {lp}")
+    if not ep.exists():
+        logger.warning(f"Elliptic edges file not found: {ep}. Graph will have no edges.")
 
     logger.info(f"Loading Elliptic dataset from {fp}")
 
@@ -77,8 +79,7 @@ def load_elliptic_dataset(
         f"unknown={len(df) - len(illicit) - len(licit)}"
     )
 
-    # Build NetworkX graph (minimal — edges not in this dataset version)
-    # For full edge data use elliptic_txs_edgelist.csv if available
+    # Build NetworkX graph
     G = nx.DiGraph()
     feature_cols = [c for c in df.columns if c.startswith("f")]
 
@@ -91,6 +92,21 @@ def load_elliptic_dataset(
             is_bridge=0,
             tx_velocity=float(row.get("f1", 0)),  # f1 = timestep proxy
         )
+
+    # Load edges if available
+    if ep.exists():
+        logger.info(f"Loading Elliptic edges from {ep}")
+        edges_df = pd.read_csv(ep)
+        edges_df["txId1"] = edges_df["txId1"].astype(str)
+        edges_df["txId2"] = edges_df["txId2"].astype(str)
+        
+        # Only add edges between nodes that exist in our (possibly subsetted) dataframe
+        valid_nodes = set(df["txId"].tolist())
+        edges_filtered = edges_df[edges_df["txId1"].isin(valid_nodes) & edges_df["txId2"].isin(valid_nodes)]
+        
+        edge_list = list(zip(edges_filtered["txId1"], edges_filtered["txId2"]))
+        G.add_edges_from(edge_list)
+        logger.info(f"Added {len(edge_list)} edges to the graph.")
 
     # Node features dict
     node_features = {

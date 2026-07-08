@@ -1,23 +1,23 @@
 # 📊 AML AI Copilot — Benchmark Report
 
-**Date:** 2026-06-28 06:40 UTC  
-**Dataset:** Synthetic (scale-free graph, 300 labelled nodes)  
+**Date:** 2026-07-08 03:19 UTC  
+**Dataset:** Synthetic (scale-free graph, 60 labelled nodes)  
 **F-β parameter:** β = 0.5 (Precision weighted 2× over Recall)
 
 ## Results
 
 | Model | Precision | Recall | F-β (β=0.5) | FPR | Runtime |
 |-------|-----------|--------|-------------|-----|--------|
-| **XGBoost** 🏆 | 1.000 | 1.000 | 1.000 | **0.000** | 0.50s |
-| **RandomForest** | 1.000 | 1.000 | 1.000 | **0.000** | 0.42s |
-| **QUBO-Optimizer** | 1.000 | 0.625 | 0.893 | **0.000** | 0.12s |
-| **GraphSAGE** | 0.280 | 0.875 | 0.324 | **0.196** | 0.50s |
-| **GAT** | 0.280 | 0.875 | 0.324 | **0.196** | 0.50s |
+| **GraphSAGE[MLP-fallback]** 🏆 | 1.000 | 1.000 | 1.000 | **0.000** | 0.30s |
+| **GAT[MLP-fallback]** | 1.000 | 1.000 | 1.000 | **0.000** | 0.23s |
+| **XGBoost** | 1.000 | 1.000 | 1.000 | **0.000** | 0.13s |
+| **RandomForest** | 1.000 | 1.000 | 1.000 | **0.000** | 0.21s |
+| **QUBO-Optimizer** | 0.882 | 0.625 | 0.815 | **0.007** | 0.04s |
 
 
 ## Key Finding
 
-**XGBoost** achieves the lowest False Positive Rate (0.0%).
+**GraphSAGE[MLP-fallback]** achieves the lowest False Positive Rate (0.0%).
 
 ## Interpretation
 
