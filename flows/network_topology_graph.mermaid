@@ -1,0 +1,108 @@
+graph TD
+    subgraph Legend["Legend"]
+        L1["🔴 High Risk (r̃ᵢ > 0.7)"]
+        L2["🟡 Medium Risk (0.3-0.7)"]
+        L3["🟢 Low Risk (< 0.3)"]
+        L4["Edge thickness = Aᵢⱼ (transaction amount)"]
+        L5["🟠 Smurfing Cluster (tensor-decomposed)"]
+        L6["🛡️ RPC-verified telemetry source"]
+    end
+
+    subgraph DataLayer["🛡️ Anti-Spoofing Layer — §6.3"]
+        direction LR
+        RPC1["Node A<br>(Etherscan)"]
+        RPC2["Node B<br>(Alchemy)"]
+        RPC3["Node C<br>(The Graph)"]
+        RPC_check{"State Hash<br>Consensus?"}
+        RPC_ok["✅ Verified Telemetry<br>→ proceed to graph"]
+        RPC_fail["⚠️ Spoofed / Jammed<br>→ Fallback Pipeline"]
+        RPC1 --> RPC_check
+        RPC2 --> RPC_check
+        RPC3 --> RPC_check
+        RPC_check -->|"Consensus ✓"| RPC_ok
+        RPC_check -->|"Hash mismatch"| RPC_fail
+    end
+
+    RPC_ok --> Seed
+
+    Seed(["🎯 Seed Wallet<br>(user input, 0x...)"])
+
+    subgraph Hop1["1-Hop Neighbors (dist = 1)"]
+        A1["🔴 Wallet A1<br>r̃=0.82"]
+        A2["🟡 Wallet A2<br>r̃=0.45 (baseline, pre-smurfing)<br>⚠️ Awaiting tensor signal elevation"]
+        A3["🟢 Wallet A3<br>r̃=0.12"]
+        A4["🔴 Wallet A4<br>r̃=0.91"]
+    end
+
+    subgraph Hop2["2-Hop Neighbors (dist = 2)"]
+        B1["🔴 Wallet B1<br>r̃=0.76"]
+        B2["🟢 Wallet B2<br>r̃=0.08"]
+        B3["🟡 Wallet B3<br>r̃=0.51"]
+        B4["🔴 Mixer/Tumbler<br>r̃=0.95"]
+        B5["🟢 Wallet B5<br>r̃=0.15"]
+    end
+
+    subgraph Hop3["3-Hop Neighbors (dist = 3, H_max boundary)"]
+        C1["🟡 Exchange Deposit<br>r̃=0.38"]
+        C2["🔴 Wallet C2<br>r̃=0.88"]
+        C3["🟢 Wallet C3<br>r̃=0.20"]
+    end
+
+    subgraph SmurfCluster["🟠 Smurfing Detection — Tensor Decomposition §6.1<br>Micro-transactions spatially correlated via MIMO-style algorithm<br>→ clustered into single high-probability threat signature"]
+        direction LR
+        SM1["Micro-tx 1<br>$980"]
+        SM2["Micro-tx 2<br>$995"]
+        SM3["Micro-tx 3<br>$1,005"]
+        SM4["Micro-tx 4<br>$990"]
+        SM_result["🟠 Aggregated Smurfing Signal<br>Effective: $3,970<br>→ elevates r̃ of originating wallet"]
+        SM1 --> SM_result
+        SM2 --> SM_result
+        SM3 --> SM_result
+        SM4 --> SM_result
+    end
+
+    SM_result -.->|"tensor signal feed"| A2
+
+    Seed ==>|"$45,200"| A1
+    Seed -->|"$1,100"| A2
+    Seed -.->|"$80"| A3
+    Seed ==>|"$38,900"| A4
+
+    A1 ==>|"$44,800"| B1
+    A1 -.->|"$150"| B2
+    A2 -->|"$900"| B3
+    A4 ==>|"$37,600"| B4
+    A4 -.->|"$60"| B5
+
+    B1 ==>|"$44,100"| C2
+    B4 -->|"$12,300"| C1
+    B4 -->|"$11,900"| C3
+
+    subgraph Top20["Top-20 High-Risk Subgraph G20 — selected via TopK(V, r̃ᵢ, Centrality, PathRisk)<br>⚡ Kill Chain triggers on these nodes: qₐ ≥ 0.85 → IMMEDIATE FREEZE via smart-contract — §6.2"]
+        direction LR
+        note["Nodes included:<br>Seed, A1, A4, B1, B4, C2<br>(shown with bold border)"]
+    end
+
+    style Seed fill:#fff,stroke:#333,stroke-width:3px
+    style A1 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style A4 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style B1 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style B4 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style C2 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style A2 fill:#fff3cd,stroke:#c90
+    style B3 fill:#fff3cd,stroke:#c90
+    style C1 fill:#fff3cd,stroke:#c90
+    style A3 fill:#d4edda,stroke:#3a3
+    style B2 fill:#d4edda,stroke:#3a3
+    style B5 fill:#d4edda,stroke:#3a3
+    style C3 fill:#d4edda,stroke:#3a3
+    style SM1 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM2 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM3 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM4 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM_result fill:#ff8f00,stroke:#e65100,stroke-width:2px,color:#fff,font-weight:bold
+    style RPC1 fill:#e8f5e9,stroke:#2e7d32
+    style RPC2 fill:#e8f5e9,stroke:#2e7d32
+    style RPC3 fill:#e8f5e9,stroke:#2e7d32
+    style RPC_ok fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style RPC_fail fill:#ffcccc,stroke:#c00,stroke-width:2px

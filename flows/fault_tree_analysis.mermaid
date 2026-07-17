@@ -1,0 +1,96 @@
+flowchart TD
+
+    %% ============ TREE 1: FALSE NEGATIVE ============
+    TOP1["🎯 TOP EVENT<br>System fails to flag a genuinely<br>fraudulent wallet (False Negative)"]
+
+    TOP1 --> OR1{{"OR"}}
+
+    OR1 --> FD["Data Layer Failure"]
+    OR1 --> FE["Feature Extraction Failure"]
+    OR1 --> FS["Subgraph Selection Failure"]
+    OR1 --> FQ["QUBO/QAOA Failure"]
+    OR1 --> FA["Agent Layer Failure"]
+    OR1 --> FSM["Smurfing Detection Failure — §6.1"]
+    OR1 --> FKC["Kill Chain Latency Failure — §6.2"]
+
+    FD --> ORd{{"OR"}}
+    ORd --> FD1["Etherscan/Alchemy API<br>downtime or rate-limit"]
+    ORd --> FD2["Incomplete hop expansion<br>(H set too shallow)"]
+    ORd --> FD3["🛡️ RPC Spoofed / Jammed — §6.3<br>Adversary injects sybil data<br>or exploits RPC node delay<br>→ Fallback pipeline not triggered"]
+
+    FE --> ORe{{"OR"}}
+    ORe --> FE1["Masking hides too much signal<br>mᵏᵢ = 0 for critical features"]
+    ORe --> FE2["Peer group Pi mis-defined<br>→ normalization φᵏᵢ skewed"]
+
+    FS --> ANDs{{"AND"}}
+    ANDs --> FS1["Node Risk Score r̃ᵢ<br>underestimated"]
+    ANDs --> FS2["Fraudulent wallet ranked<br>outside Top-20 cutoff"]
+
+    FQ --> ORq{{"OR"}}
+    ORq --> FQ1["Circuit depth p too shallow<br>→ poor energy minimization<br>(p below p_min bound) — §8"]
+    ORq --> FQ2["Ising coupling Jᵢⱼ<br>miscalibrated (weak signal) — §3"]
+    ORq --> FQ3["NISQ noise exceeds<br>signal-to-noise threshold"]
+
+    FA --> ORa{{"OR"}}
+    ORa --> FA1["OSINT/scam DB lacks<br>this entity yet (data lag)"]
+    ORa --> FA2["Sanctions/PEP list<br>not yet updated"]
+
+    FSM --> ORsm{{"OR"}}
+    ORsm --> FSM1["Tensor decomposition<br>not applied → micro-transactions<br>evaluated individually (sub-threshold)"]
+    ORsm --> FSM2["Spatial correlation window<br>too narrow → smurfing cluster<br>not reconstructed across time"]
+    ORsm --> FSM3["Smurfed wallets fall outside<br>H hop boundary → graph<br>never captures the cluster"]
+
+    FKC --> ANDkc{{"AND"}}
+    ANDkc --> FKC1["QUBO risk score qₐ ≥ 0.85<br>but FREEZE routed through<br>CrewAI LLM → latency delay"]
+    ANDkc --> FKC2["Funds moved out during<br>LLM processing window<br>(seconds to minutes)"]
+
+    %% ============ TREE 2: FALSE POSITIVE ============
+    TOP2["🎯 TOP EVENT<br>System incorrectly freezes a<br>legitimate wallet (False Positive)"]
+
+    TOP2 --> OR2{{"OR"}}
+
+    OR2 --> GP["Weighting/Threshold Failure"]
+    OR2 --> GC["Counterparty Contagion Error"]
+    OR2 --> GQ["QUBO Over-Flagging"]
+    OR2 --> GA["Agent Misjudgment"]
+    OR2 --> GCFAR["CFAR Miscalibration — §4"]
+    OR2 --> GRPC["Spoofed Telemetry Causes<br>False Signal — §6.3"]
+
+    GP --> ORp{{"OR"}}
+    ORp --> GP1["Thresholds τM, τH<br>set too aggressively<br>(sensitivity analysis needed — §8)"]
+    ORp --> GP2["Weight ωk not sensitivity-tested<br>→ one factor dominates R score — §8"]
+
+    GC --> ANDc{{"AND"}}
+    ANDc --> GC1["Wallet transacts with<br>1 flagged counterparty"]
+    ANDc --> GC2["Counterparty risk yᶜᵖᵢ<br>propagates without decay/haircut"]
+
+    GQ --> ORgq{{"OR"}}
+    ORgq --> GQ1["False Positive penalty λFP<br>too weak in cost function"]
+    ORgq --> GQ2["Allowlist Li not applied<br>(known-licit wallet unmarked)"]
+
+    GA --> ORga{{"OR"}}
+    ORga --> GA1["OSINT false match<br>(name/address collision)"]
+    ORga --> GA2["Compliance Score R formula<br>over-weights external signal E"]
+
+    GCFAR --> ORcfar{{"OR"}}
+    ORcfar --> GCFAR1["Fβ precision bias β=0.5<br>overcorrects toward flagging<br>(CFAR threshold too low) — §4"]
+    ORcfar --> GCFAR2["CFAR threshold not re-calibrated<br>as transaction distribution<br>shifts (concept drift)"]
+
+    GRPC --> ORrpc{{"OR"}}
+    ORrpc --> GRPC1["Single RPC node queried<br>(no multi-node consensus)<br>→ injected sybil data accepted"]
+    ORrpc --> GRPC2["Payload signature check<br>skipped → spoofed transaction<br>data enters graph as real"]
+
+    %% Styling
+    classDef top fill:#ffe0e0,stroke:#900,stroke-width:2px,font-weight:bold;
+    classDef gate fill:#fff,stroke:#333,stroke-width:2px;
+    classDef leaf fill:#f5f5f5,stroke:#666,stroke-width:1px;
+    classDef newleaf fill:#fffde7,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef newtop fill:#fce4ec,stroke:#880e4f,stroke-width:2px,font-weight:bold;
+
+    class TOP1,TOP2 top;
+    class OR1,ORd,ORe,ANDs,ORq,ORa,OR2,ORp,ANDc,ORgq,ORga gate;
+    class ORsm,ANDkc,ORcfar,ORrpc gate;
+    class FD,FE,FS,FQ,FA,FD1,FD2,FE1,FE2,FS1,FS2,FQ1,FQ2,FQ3,FA1,FA2 leaf;
+    class GP,GC,GQ,GA,GP1,GP2,GC1,GC2,GQ1,GQ2,GA1,GA2 leaf;
+    class FD3,FSM,FKC,FSM1,FSM2,FSM3,FKC1,FKC2 newleaf;
+    class GCFAR,GRPC,GCFAR1,GCFAR2,GRPC1,GRPC2 newleaf;
