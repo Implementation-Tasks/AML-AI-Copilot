@@ -1,0 +1,120 @@
+flowchart TD
+
+    %% ============ TREE 1: FALSE NEGATIVE ============
+    TOP1["🎯 TOP EVENT<br/>System fails to flag a genuinely<br/>fraudulent wallet (False Negative)"]
+
+    TOP1 --> OR1{{"OR"}}
+
+    OR1 --> FD["Data Layer Failure<br/>(Bottleneck 3 — §6.3)"]
+    OR1 --> FE["Feature Extraction Failure<br/>(Classical Layer — §2)"]
+    OR1 --> FS["Subgraph Selection Failure<br/>(NISQ Bridge — §2)"]
+    OR1 --> FQ["QUBO / QAOA Failure<br/>(Quantum Core — §3, §8)"]
+    OR1 --> FA["Agent Layer Failure<br/>(Multi-Agent — §4)"]
+    OR1 --> FSM["Smurfing Detection Failure<br/>(Bottleneck 1 — §6.1)"]
+    OR1 --> FKC["Kill Chain Latency Failure<br/>(Bottleneck 2 — §6.2)"]
+
+    FD --> ORd{{"OR"}}
+    ORd --> FD1["Etherscan / Alchemy API<br/>downtime or rate-limit"]
+    ORd --> FD2["Incomplete hop expansion<br/>(H set too shallow — boundary too tight)"]
+    ORd --> FD3["🛡️ RPC Spoofed / Jammed — §6.3<br/>Adversary injects Sybil transaction data<br/>or exploits RPC node delay / fork<br/>→ Fallback pipeline not triggered<br/>Defense: multi-node consensus + payload signing"]
+
+    FE --> ORe{{"OR"}}
+    ORe --> FE1["Masking hides too much signal<br/>mᵏᵢ = 0 for critical features"]
+    ORe --> FE2["Peer group Pᵢ mis-defined<br/>→ normalization φᵏᵢ skewed<br/>(P₉₈ anchor mis-computed)"]
+
+    FS --> ANDs{{"AND"}}
+    ANDs --> FS1["Node Risk Score r̃ᵢ<br/>underestimated"]
+    ANDs --> FS2["Fraudulent wallet ranked<br/>outside Top-20 cutoff<br/>(priority score sᵢ too low)"]
+
+    FQ --> ORq{{"OR"}}
+    ORq --> FQ1["Circuit depth p too shallow<br/>→ poor energy minimization<br/>(p below p_min explicit bound) — §8<br/>Fix: define p_min / p_max bounds &amp; noise-accuracy curve"]
+    ORq --> FQ2["Ising coupling Jᵢⱼ mis-calibrated<br/>(weak signal from QUBO pairwise term) — §3<br/>Fix: sensitivity check on qᵢⱼ = λFP uᵢⱼ - η eᵢⱼ"]
+    ORq --> FQ3["NISQ hardware noise exceeds<br/>signal-to-noise threshold<br/>(decoherence / gate error)"]
+
+    FA --> ORa{{"OR"}}
+    ORa --> FA1["OSINT / scam DB lacks<br/>this entity (data lag)<br/>or CryptoScamDB not updated"]
+    ORa --> FA2["Sanctions / PEP list<br/>not yet updated at decision time"]
+
+    FSM --> ORsm{{"OR"}}
+    ORsm --> FSM1["Tensor decomposition<br/>not applied → micro-transactions<br/>evaluated individually (each sub-threshold)<br/>— MIMO clustering step missing — §6.1"]
+    ORsm --> FSM2["Spatial correlation window<br/>too narrow → smurfing cluster<br/>not reconstructed across time dimension"]
+    ORsm --> FSM3["Smurfed wallets fall outside<br/>H-hop boundary → directed graph<br/>never captures the cluster"]
+
+    FKC --> ANDkc{{"AND"}}
+    ANDkc --> FKC1["QUBO risk score qₐ ≥ 0.85<br/>but FREEZE routed through<br/>CrewAI LLM → latency delay<br/>(seconds to minutes) — §6.2"]
+    ANDkc --> FKC2["Funds moved out during<br/>LLM processing window<br/>Kill Chain not decoupled<br/>from Analysis Chain"]
+
+    %% ============ TREE 2: FALSE POSITIVE ============
+    TOP2["🎯 TOP EVENT<br/>System incorrectly freezes a<br/>legitimate wallet (False Positive)"]
+
+    TOP2 --> OR2{{"OR"}}
+
+    OR2 --> GP["Weighting / Threshold Failure<br/>(Refinement §8)"]
+    OR2 --> GC["Counterparty Contagion Error<br/>(Classical Layer)"]
+    OR2 --> GQ["QUBO Over-Flagging<br/>(Quantum Core — §3)"]
+    OR2 --> GA["Agent Misjudgment<br/>(Multi-Agent — §4)"]
+    OR2 --> GCFAR["CFAR / Fβ Miscalibration — §4"]
+    OR2 --> GRPC["Spoofed Telemetry Causes<br/>False Signal — §6.3"]
+
+    GP --> ORp{{"OR"}}
+    ORp --> GP1["Thresholds τM, τH<br/>set too aggressively<br/>→ weight sensitivity ±20% test required — §8"]
+    ORp --> GP2["Weight ωₖ not sensitivity-tested<br/>→ one factor dominates final score Rₐ<br/>→ ablation analysis required — §8"]
+
+    GC --> ANDc{{"AND"}}
+    ANDc --> GC1["Wallet transacts with<br/>≥1 flagged counterparty"]
+    ANDc --> GC2["Counterparty risk yᶜᵖᵢ<br/>propagates without decay / haircut<br/>→ contagion amplifies innocent wallet"]
+
+    GQ --> ORgq{{"OR"}}
+    ORgq --> GQ1["False Positive penalty λFP<br/>too weak in QUBO pairwise term qᵢⱼ<br/>→ weak-evidence pairs over-flagged"]
+    ORgq --> GQ2["Licit allowlist Lᵢ not applied<br/>(known-licit wallet left unmarked)<br/>→ μL licit penalty missing from qᵢ"]
+
+    GA --> ORga{{"OR"}}
+    ORga --> GA1["OSINT false match<br/>(name / address collision in<br/>OpenSanctions or PEP list)"]
+    ORga --> GA2["Compliance Score Rₐ formula<br/>over-weights external signal Eₐ<br/>(weight ωE too large — §8 calibration)"]
+
+    GCFAR --> ORcfar{{"OR"}}
+    ORcfar --> GCFAR1["Fβ precision bias (β=0.5)<br/>overcorrects toward flagging<br/>(CFAR threshold τH set too low) — §4"]
+    ORcfar --> GCFAR2["CFAR threshold not re-calibrated<br/>as transaction distribution shifts<br/>(concept drift over time)"]
+
+    GRPC --> ORrpc{{"OR"}}
+    ORrpc --> GRPC1["Single RPC node queried<br/>(no multi-node consensus applied)<br/>→ injected Sybil data accepted as real — §6.3"]
+    ORrpc --> GRPC2["Cryptographic payload signature<br/>check skipped → spoofed transaction<br/>data enters graph as legitimate input — §6.3"]
+
+    %% ============ TREE 3: SYSTEM-LEVEL SPF ============
+    TOP3["🎯 TOP EVENT<br/>Kill Chain / Analysis Chain<br/>Single Points of Failure (SPF)"]
+
+    TOP3 --> OR3{{"OR"}}
+
+    OR3 --> SPF_KILL["Kill Chain SPF<br/>(Bottleneck 2 §6.2)"]
+    OR3 --> SPF_QC["Quantum Circuit SPF<br/>(§3, §8)"]
+    OR3 --> SPF_DATA["Data Pipeline SPF<br/>(§6.3)"]
+
+    SPF_KILL --> ORspfk{{"OR"}}
+    ORspfk --> SPF_K1["QUBO optimizer threshold not<br/>wired directly to smart-contract API<br/>→ human-in-loop required → latency"]
+    ORspfk --> SPF_K2["Analysis Chain blocks Kill Chain<br/>(not truly parallel / non-blocking)"]
+
+    SPF_QC --> ORspfq{{"OR"}}
+    ORspfq --> SPF_Q1["No classical fallback (simulated annealing)<br/>when NISQ noise exceeds threshold<br/>→ system stalls awaiting quantum result"]
+    ORspfq --> SPF_Q2["QAOA depth p undefined<br/>→ circuit cannot be validated on<br/>target hardware or high-fidelity simulator — §8"]
+
+    SPF_DATA --> ORspfd{{"OR"}}
+    ORspfd --> SPF_D1["No Quapp.cloud hard timeout<br/>→ pipeline blocked indefinitely<br/>on slow / unresponsive RPC — §7"]
+    ORspfd --> SPF_D2["Fallback pipeline not triggered<br/>on hash mismatch — §6.3"]
+
+    %% Styling
+    classDef top fill:#ffe0e0,stroke:#900,stroke-width:2px,font-weight:bold;
+    classDef gate fill:#fff,stroke:#333,stroke-width:2px;
+    classDef leaf fill:#f5f5f5,stroke:#666,stroke-width:1px;
+    classDef newleaf fill:#fffde7,stroke:#f57f17,stroke-width:2px,font-style:italic;
+    classDef newtop fill:#fce4ec,stroke:#880e4f,stroke-width:2px,font-weight:bold;
+    classDef refinement fill:#e8f5e9,stroke:#2e7d32,stroke-width:1.5px;
+
+    class TOP1,TOP2 top;
+    class TOP3 newtop;
+    class OR1,ORd,ORe,ANDs,ORq,ORa,OR2,ORp,ANDc,ORgq,ORga gate;
+    class ORsm,ANDkc,ORcfar,ORrpc,OR3,ORspfk,ORspfq,ORspfd gate;
+    class FD,FE,FS,FQ,FA,FD1,FD2,FE1,FE2,FS1,FS2,FQ1,FQ2,FQ3,FA1,FA2 leaf;
+    class GP,GC,GQ,GA,GP1,GP2,GC1,GC2,GQ1,GQ2,GA1,GA2 leaf;
+    class FD3,FSM,FKC,FSM1,FSM2,FSM3,FKC1,FKC2 newleaf;
+    class GCFAR,GRPC,GCFAR1,GCFAR2,GRPC1,GRPC2 newleaf;
+    class SPF_KILL,SPF_QC,SPF_DATA,SPF_K1,SPF_K2,SPF_Q1,SPF_Q2,SPF_D1,SPF_D2 refinement;

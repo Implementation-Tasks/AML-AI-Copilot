@@ -1,0 +1,119 @@
+graph TD
+    subgraph Legend["Legend"]
+        L1["🔴 High Risk (r̃ᵢ > 0.7)"]
+        L2["🟡 Medium Risk (0.3 – 0.7)"]
+        L3["🟢 Low Risk (< 0.3)"]
+        L4["Edge thickness ∝ Aᵢⱼ (transaction amount)"]
+        L5["🟠 Smurfing Cluster (tensor-decomposed — §6.1)"]
+        L6["🛡️ RPC-verified telemetry source — §6.3"]
+    end
+
+    subgraph DataLayer["🛡️ Anti-Spoofing / Physical-Layer Security — §6.3 (Bottleneck 3)"]
+        direction LR
+        RPC1["Node A<br/>(Etherscan)"]
+        RPC2["Node B<br/>(Alchemy)"]
+        RPC3["Node C<br/>(The Graph)"]
+        RPC_check{"Multi-Node<br/>State Hash<br/>Consensus?"}
+        RPC_sign["🔏 Cryptographic<br/>Payload Signing<br/>(strict integrity check)"]
+        RPC_ok["✅ Verified Telemetry<br/>→ proceed to graph"]
+        RPC_fail["⚠️ Jammed / Spoofed<br/>→ Fallback Pipeline<br/>Hard timeout enforced"]
+        RPC1 --> RPC_check
+        RPC2 --> RPC_check
+        RPC3 --> RPC_check
+        RPC_check -->|"Consensus ✓"| RPC_sign
+        RPC_check -->|"Hash mismatch"| RPC_fail
+        RPC_sign --> RPC_ok
+    end
+
+    RPC_ok --> Seed
+
+    Seed(["🎯 Seed Wallet a<br/>(0x…, always enforced in G₂₀<br/>via Λ_seed term)"])
+
+    subgraph Hop1["1-Hop Neighbors (dist = 1)"]
+        A1["🔴 Wallet A1<br/>r̃=0.82"]
+        A2["🟡 Wallet A2<br/>r̃=0.45 (baseline, pre-smurfing)<br/>⚠️ Tensor signal pending elevation — §6.1"]
+        A3["🟢 Wallet A3<br/>r̃=0.12"]
+        A4["🔴 Wallet A4<br/>r̃=0.91"]
+    end
+
+    subgraph Hop2["2-Hop Neighbors (dist = 2)"]
+        B1["🔴 Wallet B1<br/>r̃=0.76"]
+        B2["🟢 Wallet B2<br/>r̃=0.08"]
+        B3["🟡 Wallet B3<br/>r̃=0.51"]
+        B4["🔴 Mixer / Tumbler<br/>r̃=0.95<br/>(y_crypto flag active)"]
+        B5["🟢 Wallet B5<br/>r̃=0.15"]
+    end
+
+    subgraph Hop3["3-Hop Neighbors (dist = 3, H_max boundary)"]
+        C1["🟡 Exchange Deposit<br/>r̃=0.38"]
+        C2["🔴 Wallet C2<br/>r̃=0.88"]
+        C3["🟢 Wallet C3<br/>r̃=0.20"]
+    end
+
+    subgraph SmurfCluster["🟠 Smurfing Detection — Bottleneck 1 §6.1<br/>Wallet-×-Time tensor decomposed via MIMO-style spatial correlation<br/>Micro-transactions clustered → single high-probability threat signature"]
+        direction LR
+        SM1["Micro-tx 1<br/>$980 (sub-threshold)"]
+        SM2["Micro-tx 2<br/>$995 (sub-threshold)"]
+        SM3["Micro-tx 3<br/>$1,005 (sub-threshold)"]
+        SM4["Micro-tx 4<br/>$990 (sub-threshold)"]
+        SM_result["🟠 Aggregated Smurfing Signal<br/>Effective: $3,970<br/>→ elevates r̃ of originating wallet<br/>→ enters QUBO linear term qᵢ"]
+        SM1 --> SM_result
+        SM2 --> SM_result
+        SM3 --> SM_result
+        SM4 --> SM_result
+    end
+
+    SM_result -.->|"tensor signal feed"| A2
+
+    subgraph NormBox["Risk Score Computation — §2 (Classical Layer)"]
+        direction TB
+        NORM["Robust Percentile Normalization:<br/>φᵏᵢ = clip((yᵏᵢ - median(yᵏ)) / (P₉₈(yᵏ) - median(yᵏ) + ε), 0, 1)<br/>Dynamic masking mᵏᵢ prevents bias from missing data<br/>r̃ᵢ = clip(Σₖ mᵏᵢ wₖ φᵏᵢ / Σₖ mᵏᵢ wₖ + ε, 0, 1)"]
+    end
+
+    Seed ==>|"$45,200"| A1
+    Seed -->|"$1,100"| A2
+    Seed -.->|"$80"| A3
+    Seed ==>|"$38,900"| A4
+
+    A1 ==>|"$44,800"| B1
+    A1 -.->|"$150"| B2
+    A2 -->|"$900"| B3
+    A4 ==>|"$37,600"| B4
+    A4 -.->|"$60"| B5
+
+    B1 ==>|"$44,100"| C2
+    B4 -->|"$12,300"| C1
+    B4 -->|"$11,900"| C3
+
+    subgraph Top20["⚡ Top-20 High-Risk Subgraph G₂₀ — NISQ Bridge §2<br/>sᵢ = λᵣ r̃ᵢ + λc Centralityᵢ + λₚ PathRiskᵢ + Λ_seed I[i=a]<br/>n = |V₂₀| ≤ 20 qubits | Seed always enforced | CFAR Fβ (β=0.5) cost — §4"]
+        direction LR
+        note["Nodes in G₂₀:<br/>Seed, A1, A4, B1, B4, C2<br/>(bold red border = quantum binary variable xᵢ)"]
+        KC["🔴 KILL CHAIN — Bottleneck 2 §6.2<br/>qaₐ ≥ 0.85 → IMMEDIATE FREEZE<br/>triggered by QUBO optimizer directly<br/>Zero LLM latency (smart-contract / API halt)<br/>Analysis Chain runs in parallel post-engagement"]
+    end
+
+    style Seed fill:#fff,stroke:#333,stroke-width:3px
+    style A1 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style A4 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style B1 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style B4 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style C2 fill:#ffcccc,stroke:#c00,stroke-width:3px
+    style A2 fill:#fff3cd,stroke:#c90
+    style B3 fill:#fff3cd,stroke:#c90
+    style C1 fill:#fff3cd,stroke:#c90
+    style A3 fill:#d4edda,stroke:#3a3
+    style B2 fill:#d4edda,stroke:#3a3
+    style B5 fill:#d4edda,stroke:#3a3
+    style C3 fill:#d4edda,stroke:#3a3
+    style SM1 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM2 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM3 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM4 fill:#ffe0b2,stroke:#e65100,stroke-width:1px
+    style SM_result fill:#ff8f00,stroke:#e65100,stroke-width:2px,color:#fff,font-weight:bold
+    style RPC1 fill:#e8f5e9,stroke:#2e7d32
+    style RPC2 fill:#e8f5e9,stroke:#2e7d32
+    style RPC3 fill:#e8f5e9,stroke:#2e7d32
+    style RPC_sign fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style RPC_ok fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px
+    style RPC_fail fill:#ffcccc,stroke:#c00,stroke-width:2px
+    style NORM fill:#f3e5f5,stroke:#6a1b9a,stroke-width:1.5px
+    style KC fill:#ffe0e0,stroke:#c00,stroke-width:2px,font-weight:bold

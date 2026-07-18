@@ -1,0 +1,93 @@
+flowchart TD
+
+    subgraph S1["① Sensor & Physical Layer — Telemetry Intake + Anti-Spoofing (Bottleneck 3 §6.3)"]
+        direction TB
+        S1a["Wallet Address Input<br/>(0x format validation)"]
+        S1b["Ethereum / On-Chain APIs<br/>Etherscan · Alchemy · The Graph · Dune"]
+        S1b_rpc["🛡️ Multi-Node RPC Consensus — §6.3<br/>Cross-verify state hash across independent nodes<br/>Strict payload signing (cryptographic integrity check)<br/>Hash mismatch → route to Fallback Pipeline"]
+        S1b_orch["⚙️ Quapp.cloud Orchestrator<br/>Async middleware · Hard timeout limits enforced<br/>Fallback redundancy pipeline on timeout — §7"]
+        S1c["Directed Transaction Graph G=(V,E)<br/>eᵢⱼ = (i, j, Aᵢⱼ, tᵢⱼ, cᵢⱼ)<br/>bounded by hop distance H from seed wallet a<br/>|V| ≤ N_max global node capacity"]
+        S1a --> S1b --> S1b_rpc --> S1b_orch --> S1c
+    end
+
+    subgraph S2["② Signal Conditioning — Feature Extraction, Normalization & Smurfing Detection (Bottleneck 1 §6.1)"]
+        direction TB
+        S2a["Raw AML Feature Extraction (11 indicators)<br/>y_amt · y_freq · y_struct · y_rapid · y_seq<br/>y_net (PageRank+Centrality) · y_crypto · y_cp · ..."]
+        S2b["Robust Percentile Normalization → [0,1]<br/>φᵏᵢ = clip((yᵏᵢ - median(yᵏ)) / (P₉₈(yᵏ) - median(yᵏ) + ε), 0, 1)"]
+        S2c["Dynamic Masking Vector mᵏᵢ ∈ {0,1}<br/>(prevents bias from missing features)"]
+        S2c_tensor["🔍 Multi-Dimensional Tensor Decomposition — §6.1<br/>Wallet-by-Time interaction tensor T<br/>MIMO-style spatial correlation clusters<br/>micro-transactions into high-probability<br/>smurfing signatures before QUBO stage"]
+        S2d["Node Risk Score r̃ᵢ<br/>r̃ᵢ = clip(Σₖ mᵏᵢ wₖ φᵏᵢ / (Σₖ mᵏᵢ wₖ + ε), 0, 1)<br/>Weights wₖ calibrated on historical labelled cases"]
+        S2a --> S2b --> S2c --> S2c_tensor --> S2d
+    end
+
+    subgraph S3["③ Target Discrimination — NISQ Bridge & Subgraph Modularization"]
+        direction TB
+        S3a["Priority Score per Wallet<br/>sᵢ = λᵣ r̃ᵢ + λc Centralityᵢ + λₚ PathRiskᵢ + Λ_seed I[i=a]<br/>Seed wallet a ∈ V₂₀ always enforced"]
+        S3b["Top-20 High-Risk Subgraph G₂₀<br/>V₂₀ = TopK₂₀(V, s), G₂₀ = G[V₂₀]<br/>n = |V₂₀| ≤ 20 → 1 qubit per wallet decision<br/>Fully auditable classical priority scoring"]
+        S3a --> S3b
+    end
+
+    subgraph S4["④ Core Processing Unit — QUBO / Ising / QAOA Quantum Optimization"]
+        direction TB
+        S4a["QUBO Formulation with Fβ Cost (β=0.5) — §4<br/>C(x) = xᵀQx<br/>Linear: qᵢ = -α(1+β²)r̃ᵢ + μL Lᵢ  (licit-wallet penalty)<br/>Pairwise: qᵢⱼ = λFP uᵢⱼ - η eᵢⱼ  (FP suppression)"]
+        S4b["Ising Hamiltonian Mapping — §3<br/>xᵢ = (1 - zᵢ)/2 → hᵢ, Jᵢⱼ computed<br/>H_C = Σᵢ hᵢ Zᵢ + Σᵢ&lt;ⱼ Jᵢⱼ ZᵢZⱼ<br/>Coupling Jᵢⱼ calibration: sensitivity check required — §8"]
+        S4c["QAOA Circuit Execution<br/>|Ψ(γ,β)⟩ = Πₗ exp(-iβₗH_M) exp(-iγₗH_C) |+⟩^⊗n<br/>γ*, β* = argmin ⟨Ψ|H_C|Ψ⟩<br/>Depth p ∈ [p_min, p_max] — explicit bounds required — §8<br/>Classical fallback: simulated annealing"]
+        S4d["Measurement & Quantum Evidence Score<br/>q̂Q = (1/M) Σₘ b^(m)ᵢ  (marginal flag probability)<br/>ζₐQ = (b*ᵢ + q̂Q) / 2  (evidence score → downstream agents)"]
+        S4a --> S4b --> S4c --> S4d
+    end
+
+    subgraph S5_KILL["⑤a KILL CHAIN — Autonomous Real-Time Interception (CIWS-level — Bottleneck 2 §6.2)"]
+        direction TB
+        S5_thresh{"riskscore ≥ 0.85?<br/>(CFAR kill-chain threshold — §4)<br/>QUBO optimizer evaluates directly"}
+        S5_freeze["🔴 IMMEDIATE FREEZE<br/>Smart-contract / API halt triggered<br/>by QUBO Optimizer — Zero LLM latency<br/>Decoupled from Analysis Chain — §6.2"]
+        S5_thresh -->|"threshold breached"| S5_freeze
+        S5_thresh -->|"below threshold"| S5_pass["→ Analysis Chain only"]
+    end
+
+    subgraph S5_ANALYSIS["⑤b ANALYSIS CHAIN — Post-Engagement Explainability (Parallel, Non-Blocking)"]
+        direction TB
+        S5b["Multi-Agent Crew Activation<br/>Flow Tracer · OSINT Analyst · Compliance Officer"]
+        S5c["External Intelligence Fusion<br/>OpenSanctions · CryptoScamDB · PEP lists · KYC — §5<br/>Returns normalized signals: E (Exposure), S (Sanctions), C (CryptoScam), O (Other)"]
+        S5d["Final Compliance Score Rₐ<br/>Rₐ = clip(ωᵣ r̃ₐ + ωq ζₐQ + ωE Eₐ + ωS Sₐ + ωC Cₐ + ωO Oₐ, 0, 1)<br/>All ω ≥ 0, Σω = 1 — calibrated from historical labelled cases — §8<br/>Sensitivity / ablation analysis required — §8"]
+        S5b --> S5c --> S5d
+    end
+
+    subgraph S6["⑥ Output — Auditable Verdict & SAR-Ready Report"]
+        direction TB
+        S6a{"Decision Rule<br/>Thresholds τM, τH — calibrated, not hard-coded — §8<br/>Weight sensitivity ±20% perturbation test required"}
+        S6b["🔴 FREEZE<br/>R ≥ τH or confirmed Sanctions / PEP hit"]
+        S6c["🟡 MONITOR<br/>τM ≤ R &lt; τH"]
+        S6d["🟢 CLEAR<br/>R &lt; τM"]
+        S6e["SHA-256 Hashed JSON Report<br/>Tamper-evident audit trail<br/>SAR-ready output from Analysis Chain<br/>(cryptographically auditable — §2 hybrid handover)"]
+        S6a --> S6b
+        S6a --> S6c
+        S6a --> S6d
+        S6b --> S6e
+        S6c --> S6e
+        S6d --> S6e
+    end
+
+    S1 --> S2 --> S3 --> S4 --> S5_KILL
+    S4 --> S5_ANALYSIS
+    S5_freeze -->|"parallel post-engagement"| S5_ANALYSIS
+    S5_ANALYSIS --> S5d
+    S5d --> S6
+
+    classDef stage fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    classDef killchain fill:#ffe0e0,stroke:#c00,stroke-width:2px,font-weight:bold;
+    classDef analysis fill:#e0eaff,stroke:#336,stroke-width:1px;
+    classDef security fill:#e8f5e9,stroke:#2e7d32,stroke-width:1.5px;
+    classDef quantum fill:#f3e5f5,stroke:#6a1b9a,stroke-width:1.5px;
+    classDef newnode fill:#fffde7,stroke:#f57f17,stroke-width:2px,font-style:italic;
+
+    class S1a,S1b,S1c stage;
+    class S1b_orch security;
+    class S1b_rpc newnode;
+    class S2a,S2b,S2c,S2d stage;
+    class S2c_tensor newnode;
+    class S3a,S3b stage;
+    class S4a,S4b,S4c,S4d quantum;
+    class S5_thresh,S5_freeze killchain;
+    class S5_pass stage;
+    class S5b,S5c,S5d analysis;
+    class S6a,S6b,S6c,S6d,S6e stage;
