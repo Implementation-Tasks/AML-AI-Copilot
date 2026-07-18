@@ -1,1 +1,1 @@
-downoad the dataset here https://www.kaggle.com/datasets/ellipticco/elliptic-data-set
+downoad the dataset and put them inside the Elliptic folder. Here is the download link https://www.kaggle.com/datasets/ellipticco/elliptic-data-set
