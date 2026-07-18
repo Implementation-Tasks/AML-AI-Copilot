@@ -1,0 +1,44 @@
+# ⚛ AML AI Copilot - Dependencies
+# SEA Quantathon 2026 · QCFinOp Team
+# Python 3.14+
+
+# ─── Core Scientific Computing ───────────────────────────────────────────────
+numpy>=1.26.0
+scipy>=1.11.0
+networkx>=3.2.0
+
+# ─── Data Processing ─────────────────────────────────────────────────────────
+pandas>=2.1.0
+
+# ─── Quantum & Optimization ──────────────────────────────────────────────────
+# Note: Qamelion and Perceval are optional (quantum hardware SDKs)
+# Uncomment if you have access to quantum hardware:
+# quamelion-emulator>=0.1.0
+# perceval-quandela>=0.10.0
+
+# ─── AI Agents (CrewAI) ──────────────────────────────────────────────────────
+crewai>=0.28.0
+langchain>=0.1.0
+langchain-anthropic>=0.1.0
+langchain-openai>=0.0.5
+
+# ─── Web3 & Blockchain ───────────────────────────────────────────────────────
+web3>=6.11.0
+requests>=2.31.0
+
+# ─── Testing ─────────────────────────────────────────────────────────────────
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# ─── Environment & Config ────────────────────────────────────────────────────
+python-dotenv>=1.0.0
+pydantic>=2.5.0
+
+# ─── Visualization (Optional) ────────────────────────────────────────────────
+matplotlib>=3.8.0
+plotly>=5.17.0
+
+# ─── Utilities ───────────────────────────────────────────────────────────────
+tqdm>=4.66.0
+colorama>=0.4.6
