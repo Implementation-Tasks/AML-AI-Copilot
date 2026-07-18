@@ -1,0 +1,19 @@
+And the meeting summary for Q&A
+
+1. Anti-Money Laundering (AML) Data Sources
+The best and more feasible approach for the project is to use virtual data and mixed data.
+
+2. Research Direction and Model Validation
+The top priority right now is to upgrade and perfect the project's current architecture/system.
+
+3. MIMO (Multiple Input, Multiple Output) Architecture
+Question/Insight: The use of MIMO architecture shares a significant similarity with our project, and MIMO is utilized partially for the mapping process (the professor cited MIMO applications in 5G technology as an example).
+
+4. Priority Order: Algorithm Optimization vs. Qiskit Platform (Quapp)
+A step-by-step approach is required. The number one priority at present is focusing on algorithm optimization. Once the system is optimized, the next step will be to apply it to other platforms or applications.
+
+5. Auxiliary Communication Channels
+Via Zalo or Gmail. The professor will use Email as the primary communication channel to discuss any arising questions.
+
+6. Next Steps and Materials
+The Professor's Plan: Professor Hans will travel to Quy Nhon next Friday. There, he plans to introduce and share more with the team about some other quantum simulators.

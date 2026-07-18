@@ -1,0 +1,165 @@
+Detailed Presentation Scripts
+
+Slide 1 – Title
+“Good afternoon. Today I will review the Hybrid Quantum-Agentic AML system 
+that was constructed on the basis of the Technical Brief and the Mathematical 
+Derivation. I will examine it through the lens of the Mentorship Proposal and 
+the Expert Evaluation Report, focusing on architectural bottlenecks and 
+concrete next steps. This is a 20-minute technical briefing.”
+
+Slide 2 – Agenda
+“This technical briefing is organized into seven sections. We begin with 
+motivation and scope, move to the overall architecture and mathematical core, 
+then cover the QUBO–Ising–QAOA pipeline, the multi-agent compliance layer, 
+the three key bottlenecks identified in the mentorship feedback, the expert 
+evaluation highlights, and finally the recommended refinements and next 
+steps.”
+
+Slide 3 – Motivation
+“There are three fundamental reasons why a graph-based quantum approach 
+is needed. First, a suspicious wallet often appears completely normal when 
+examined in isolation; the pattern only becomes visible across multi-hop fund 
+flows. Second, multi-hop transaction networks create a combinatorial explosion 
+that classical exhaustive search cannot scale. Third, compliance teams are 
+overwhelmed by false positives. That is why the objective function is 
+deliberately designed to prioritize precision with β equal to 0.5.”
+
+Slide 4 – Threat Model & NISQ Scope
+“The threat model covers structuring and smurfing, multi-hop layering, 
+cross-border and cross-chain obfuscation, exposure to mixers, bridges and 
+sanctioned entities, and rapid fund movement. Under current NISQ 
+constraints, if only 20 qubits are available, the full transaction graph is 
+reduced by classical modularization into a high-risk Top-20 subgraph. 
+QAOA(Quantum Approximate Optimization Algorithm) is then applied only to 
+
+
+that focused combinatorial core. This keeps the quantum workload realistic 
+while preserving the essential AML logic.”
+
+Slide 5 – Architecture Overview
+“The end-to-end pipeline begins with wallet-address validation, constructs a 
+directed on-chain transaction graph, extracts eleven risk features, selects the 
+Top-20 high-risk subgraph, formulates the QUBO matrix, solves it with QAOA, 
+enriches the results with multi-agent investigation, and finally issues a verdict 
+together with a SHA-256-hashed audit report. Quantum resources are 
+reserved exclusively for the binary flagging decision on the Top-20 wallets.”
+
+Slide 6 – Graph Construction & Features
+“The transaction data is represented as a directed graph G equals (V, E), 
+where each edge carries amount, timestamp and chain information. From the 
+local neighborhood of each wallet we extract a set of raw AML features: 
+amount anomaly relative to peer median and MAD, transaction frequency, 
+structuring ratio, rapid-flow velocity, sequential in-out ratio, network centrality 
+composite, mixer or bridge flags, and maximum external counterparty risk.”
+
+Slide 7 – Normalization & Node Risk Score
+“All continuous features are normalized with a robust percentile method 
+anchored at the median and the 95th percentile, then clipped to the unit 
+interval. A dynamic masking vector prevents missing data from introducing 
+bias. The masked weighted average produces a single node risk score which is 
+again clipped to the range zero to one. This score becomes the primary 
+classical signal for both subgraph selection and the linear term of the QUBO.”
+
+Slide 8 – Top-20 Subgraph Modularization
+“A classical priority score combines the normalized node risk, centrality, path 
+risk and an indicator that forces the seed wallet to remain inside the 
+subgraph. The Top-20 wallets selected by this score form the quantum-ready 
+subgraph. One wallet corresponds to one qubit and one binary decision 
+variable. This modularization is the practical bridge between a potentially huge 
+
+
+transaction network and near-term quantum hardware.”
+
+Slide 9 – QUBO Formulation
+“The global objective is expressed as the quadratic form C of x equals 
+x-transpose Q x. The linear coefficient rewards the flagging of high-risk 
+wallets while applying an explicit penalty for known licit entities; the 
+precision-oriented F-beta term with beta equal to 0.5 is built into this 
+coefficient. The pairwise term simultaneously encourages genuine risk coupling 
+and suppresses over-flagging on weakly evidenced edges through an explicit 
+false-positive penalty.”
+
+Slide 10 – Ising Mapping
+“Binary variables are converted to spin variables by the standard identity xi 
+equals (1 minus zi) over 2. Expanding the quadratic form yields a constant 
+term, linear fields hi, and coupling strengths Jij. The resulting cost Hamiltonian 
+is a sum of single-qubit Z terms and two-qubit ZZ interactions. The constant 
+is omitted from the quantum circuit because it does not affect the location of 
+the minimum-energy bit-string.”
+
+Slide 11 – QAOA Execution
+“QAOA alternates applications of the cost Hamiltonian and the transverse-field 
+mixer. Classical optimization finds the parameters gamma-star and beta-star 
+that minimize the expected energy. Measurement yields bit-strings; the best 
+sampled solution together with the marginal flag probability estimated from all 
+shots are combined into a single quantum evidence score zeta-Q. This score 
+is passed to the downstream classical agents.”
+
+Slide 12 – Multi-Agent Compliance Layer
+“Three specialized agents are deployed. The Flow Tracer reconstructs 
+multi-hop fund paths and quantifies velocity and concentration. The OSINT 
+Analyst queries external databases such as OpenSanctions and CryptoScamDB 
+and returns normalized external risk signals. The Compliance Officer 
+aggregates the quantum evidence with these off-chain signals and applies the 
+
+
+deterministic decision rules. This layer supplies the classical explainability that 
+pure quantum output inherently lacks.”
+
+Slide 13 – Final Risk Score & Decision Rules
+“The final compliance score is a convex combination of the classical node 
+risk, the quantum evidence score, and the external intelligence signals, clipped 
+to the unit interval. If the score exceeds the high threshold or a confirmed 
+sanctions hit is present, the system issues FREEZE. Scores in the intermediate 
+band produce MONITOR; scores below the low threshold produce CLEAR. All 
+weights and thresholds are calibrated on historical labelled cases.”
+
+Slide 14 – Bottleneck 1: Stealth / Smurfing
+“Fragmented micro-transactions are the financial analogue of a 
+low-radar-cross-section target. Just as MIMO spatial multiplexing and coherent 
+integration recover a stealthy radar return from the noise floor, we propose 
+to treat the wallet-by-time interaction as a tensor and apply multi-dimensional 
+decomposition together with spatial correlation algorithms. 
+This clustering step can reassemble seemingly disconnected smurfed transfers 
+into a single high-probability threat signature before the QUBO stage.”
+
+Slide 15 – Bottleneck 2: Interception Latency
+“In the current design the QAOA output is routed through a multi-agent 
+CrewAI workflow before a FREEZE decision is issued. Multi-agent LLM 
+frameworks are inherently non-deterministic and introduce seconds-to-minutes 
+of latency—unacceptable for real-time interception. 
+Drawing on the CIWS model, we recommend decoupling the kill chain from 
+the analysis chain: the QAOA optimizer itself should trigger an immediate 
+automated freeze, while the agents run in parallel solely to generate the 
+audit-ready report.”
+
+
+Slide 16 – Bottleneck 3: Physical-Layer Anti-Spoofing
+“If an adversary knows that the system relies on public endpoints such as 
+Etherscan or The Graph, it can inject Sybil data or exploit RPC delays. 
+We therefore propose a data-verification layer that performs multi-node RPC 
+consensus, cross-verifies state hashes, and enforces cryptographic payload 
+signing. 
+Telemetry that fails the integrity threshold is treated as jammed or spoofed 
+and is routed to a fallback redundancy pipeline. Hard timeouts on the 
+orchestrator prevent pipeline blocking.”
+
+Slide 17 – Expert Evaluation Highlights
+“The external expert evaluation confirmed several strengths. The 
+graph-to-QUBO mapping is regarded as a highly effective way to bring 
+quantum optimization to financial security. 
+Feature engineering with dynamic masking and robust normalization is judged 
+mathematically sound. 
+The Top-20 modularization is viewed as a practical and principled response to 
+NISQ constraints. 
+Finally, the multi-agent layer is recognized as essential for restoring classical 
+explainability and producing a cryptographically auditable report.”
+
+Slide 18 – Recommended Refinements
+“Two concrete refinements are recommended before the final pitch. 
+First, the QAOA depth parameter p must be explicitly bounded and the 
+noise-versus-accuracy trade-off curve demonstrated on the target hardware 
+or a high-fidelity simulator. 
+Second, a sensitivity analysis of the classical weights and decision thresholds 
+should be performed so that the robustness of the final verdict distribution 
+can be quantified and presented.”
