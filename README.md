@@ -804,6 +804,7 @@ Coverage: 95.2% on critical paths ✅
 ### 1. Local Development
 ```bash
 cd pack/sourcecode
+./env/scripts/activate
 pip install -r requirements.txt
 cp .env.example .env
 # Edit .env with API keys (Etherscan, Alchemy, Anthropic)
