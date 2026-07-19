@@ -142,24 +142,48 @@ def _get_backend_from_env() -> str:
     
     elif backend == "qudora":
         try:
-            import quamelion_emulator  # noqa
-            print(f"  ✅ Quamelion: OK")
+            import qudora_sdk  # noqa
+            print(f"  ✅ Qudora SDK: OK")
         except ImportError:
-            print("  ⚠️  quamelion_emulator chưa cài! Fallback về classical.")
+            print("  ⚠️  qudora-sdk chưa cài! Fallback về classical.")
             backend = "classical"
     
     return backend
 
 
+def _free_port(port: int):
+    """Kill bất kỳ process nào đang giữ port trước khi bind."""
+    import subprocess, platform
+    try:
+        if platform.system() == "Windows":
+            result = subprocess.run(
+                ["netstat", "-ano"],
+                capture_output=True, text=True
+            )
+            for line in result.stdout.splitlines():
+                if f":{port}" in line and "LISTENING" in line:
+                    pid = line.strip().split()[-1]
+                    subprocess.run(["taskkill", "/F", "/PID", pid],
+                                   capture_output=True)
+                    print(f"  🔪 Đã giải phóng port {port} (PID {pid})")
+        else:
+            subprocess.run(["fuser", "-k", f"{port}/tcp"], capture_output=True)
+    except Exception as e:
+        print(f"  ⚠️  Không thể giải phóng port {port}: {e}")
+
+
 if __name__ == "__main__":
+    PORT = 7860
     backend = _get_backend_from_env()
+    _free_port(PORT)          # Tự động giải phóng port cũ
+    import time; time.sleep(0.5)  # Chờ OS release
     print("═" * 60)
     print(f"  🚀 Khởi động AML AI Copilot Server...")
     print(f"  🔬 Quantum Backend : {backend.upper()}")
-    print(f"  🌐 UI              : http://localhost:7860")
-    print(f"  📡 API             : http://localhost:7860/api/screen")
-    print(f"  📖 Docs            : http://localhost:7860/docs")
+    print(f"  🌐 UI              : http://localhost:{PORT}")
+    print(f"  📡 API             : http://localhost:{PORT}/api/screen")
+    print(f"  📖 Docs            : http://localhost:{PORT}/docs")
     print(f"\n  💡 Tip: Dùng launcher.py để thay đổi backend")
     print("═" * 60 + "\n")
-    uvicorn.run("server:app", host="0.0.0.0", port=7860, reload=False)
+    uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=False)
 

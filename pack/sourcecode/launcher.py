@@ -222,7 +222,7 @@ def launch_menu(backend_id: BackendType):
     print(f"  {C.BOLD}{'═' * 64}{C.RESET}")
     print()
     print(f"  {C.BOLD}Chọn chế độ khởi động:{C.RESET}")
-    print(f"  {C.CYAN}[1]{C.RESET} {C.BOLD}Web UI{C.RESET}     — Server + giao diện web  {C.DIM}http://localhost:8000{C.RESET}")
+    print(f"  {C.CYAN}[1]{C.RESET} {C.BOLD}Web UI{C.RESET}     — Server + giao diện web  {C.DIM}http://localhost:7860{C.RESET}")
     print(f"  {C.CYAN}[2]{C.RESET} {C.BOLD}CLI Demo{C.RESET}   — Chạy quick_start.py để test pipeline")
     print(f"  {C.CYAN}[3]{C.RESET} {C.BOLD}QUBO Sim{C.RESET}   — Chạy DEMOCORE simulation standalone")
     print(f"  {C.CYAN}[4]{C.RESET} {C.BOLD}Thoát{C.RESET}      — Chỉ lưu backend, không chạy gì")
