@@ -78,7 +78,7 @@ def test_qubo():
         from src.data.etherscan_graph_builder import build_demo_graph
         
         # Build demo graph
-        graph = build_demo_graph('0xTEST')
+        graph = build_demo_graph('0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b')
         print(f"  📊 Graph: {graph.graph.number_of_nodes()} nodes, {graph.graph.number_of_edges()} edges")
         
         # Run QUBO optimization

@@ -25,8 +25,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Serve the demo UI at /
-app.mount("/demo", StaticFiles(directory="demo"), name="demo")
+# Serve the demo UI at /demo
+app.mount("/demo", StaticFiles(directory="DEMOCORE"), name="demo")
 
 
 # ── Request/Response models ───────────────────────────────────────────────────
@@ -45,7 +45,7 @@ class BenchmarkRequest(BaseModel):
 
 @app.get("/")
 def root():
-    return FileResponse("demo/index.html")
+    return FileResponse("DEMOCORE/04_prototype.html")
 
 
 @app.get("/health")
@@ -117,9 +117,49 @@ def run_benchmark(req: BenchmarkRequest):
     }
 
 
+def _get_backend_from_env() -> str:
+    """Đọc backend từ file .env (đã được set bởi launcher.py)"""
+    import os
+    from dotenv import load_dotenv
+    
+    load_dotenv()
+    backend = os.getenv("QUANTUM_BACKEND", "classical")
+    
+    # Validate backend
+    valid_backends = ["classical", "quandela", "qudora"]
+    if backend not in valid_backends:
+        print(f"  ⚠️  Backend không hợp lệ: {backend}. Fallback về classical.")
+        backend = "classical"
+    
+    # Check SDK availability và warning nếu thiếu
+    if backend == "quandela":
+        try:
+            import perceval  # noqa
+            print(f"  ✅ Perceval: OK")
+        except ImportError:
+            print("  ⚠️  perceval-quandela chưa cài! Fallback về classical.")
+            backend = "classical"
+    
+    elif backend == "qudora":
+        try:
+            import quamelion_emulator  # noqa
+            print(f"  ✅ Quamelion: OK")
+        except ImportError:
+            print("  ⚠️  quamelion_emulator chưa cài! Fallback về classical.")
+            backend = "classical"
+    
+    return backend
+
+
 if __name__ == "__main__":
-    print("\n===  AML AI Copilot Server starting...")
-    print("   UI  -> http://localhost:8000")
-    print("   API -> http://localhost:8000/api/screen")
-    print("   Docs-> http://localhost:8000/docs\n")
-    uvicorn.run("server:app", host="0.0.0.0", port=8000, reload=True)
+    backend = _get_backend_from_env()
+    print("═" * 60)
+    print(f"  🚀 Khởi động AML AI Copilot Server...")
+    print(f"  🔬 Quantum Backend : {backend.upper()}")
+    print(f"  🌐 UI              : http://localhost:7860")
+    print(f"  📡 API             : http://localhost:7860/api/screen")
+    print(f"  📖 Docs            : http://localhost:7860/docs")
+    print(f"\n  💡 Tip: Dùng launcher.py để thay đổi backend")
+    print("═" * 60 + "\n")
+    uvicorn.run("server:app", host="0.0.0.0", port=7860, reload=False)
+

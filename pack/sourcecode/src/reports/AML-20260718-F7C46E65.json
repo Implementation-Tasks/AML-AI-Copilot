@@ -1,0 +1,23 @@
+{
+  "case_id": "AML-20260718-F7C46E65",
+  "generated_at": "2026-07-18T13:32:52.027676+00:00Z",
+  "version": "1.0",
+  "risk_level": "MEDIUM",
+  "qubo_risk_score": 1.0,
+  "f_beta_score": 0.0,
+  "recommended_action": "MONITOR",
+  "flow_trace": {
+    "total_hops": 0,
+    "mixers": [],
+    "bridges": [],
+    "chains": []
+  },
+  "threat_intel": {
+    "sanctions_hits": [],
+    "scam_score": 0.0,
+    "categories": []
+  },
+  "travel_rule_violations": [],
+  "summary": "Wallet 0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b assessed with Compliance Score R\u2090=0.5350 (QUBO/\u03b6Q=1.000, Sanctions=0.0, Scam/S=0.000, Mixer/C=0.0, Bridge/O=0.0). Transaction trace: 0 hops across ETH. Recommended action: MONITOR.",
+  "audit_hash": "709a1f68fec99ae12016bb5008b820fb546fa931a5d6ce8881183e83eab183a6"
+}
