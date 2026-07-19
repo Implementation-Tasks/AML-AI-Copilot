@@ -45,6 +45,24 @@ class BenchmarkRequest(BaseModel):
 
 @app.get("/")
 def root():
+    return FileResponse("DEMOCORE/welcomepage.html")
+
+
+@app.get("/filesorting")
+@app.get("/filesorting.html")
+def filesorting():
+    return FileResponse("DEMOCORE/filesorting.html")
+
+
+@app.get("/filenaming")
+@app.get("/filenaming.html")
+def filenaming():
+    return FileResponse("DEMOCORE/filenaming.html")
+
+
+@app.get("/prototype")
+@app.get("/prototype.html")
+def prototype():
     return FileResponse("DEMOCORE/04_prototype.html")
 
 

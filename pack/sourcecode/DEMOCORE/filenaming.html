@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AML AI Copilot — Case Naming & Analysis</title>
+  <meta name="description" content="Name your AML investigation case and run the full quantum analysis pipeline." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary:    #060b18;
+      --bg-secondary:  #0d1426;
+      --bg-card:       #111827;
+      --bg-card2:      #1a2236;
+      --accent:        #6c63ff;
+      --accent2:       #a78bfa;
+      --accent-glow:   rgba(108,99,255,0.25);
+      --cyan:          #22d3ee;
+      --green:         #22c55e;
+      --risk-high:     #ef4444;
+      --risk-high-bg:  rgba(239,68,68,0.12);
+      --risk-med:      #f59e0b;
+      --risk-med-bg:   rgba(245,158,11,0.12);
+      --risk-low:      #22c55e;
+      --risk-low-bg:   rgba(34,197,94,0.12);
+      --text-primary:  #f1f5f9;
+      --text-secondary:#94a3b8;
+      --text-muted:    #475569;
+      --border:        #1e293b;
+      --border2:       #2d3f5c;
+      --font-main:     'Inter', sans-serif;
+      --font-mono:     'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.2;
+      pointer-events: none;
+    }
+
+    nav {
+      position: relative; z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(6,11,24,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-title { font-weight: 700; font-size: 0.95rem; }
+    .nav-sub   { font-size: 0.72rem; color: var(--text-muted); }
+
+    .steps { display: flex; align-items: center; gap: 0; }
+    .step  { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--text-muted); padding: 6px 16px; }
+    .step.active { color: var(--accent2); }
+    .step.done   { color: var(--green); }
+    .step-num {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid currentColor;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .step.active .step-num { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .step.done   .step-num { background: var(--green);  border-color: var(--green);  color: #fff; }
+    .step-arrow { color: var(--border2); font-size: 0.8rem; }
+
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .page-header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fade-in-up 0.6s ease both;
+    }
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .page-title {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #fff 0%, var(--accent2) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-sub { color: var(--text-secondary); font-size: 1rem; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 20px;
+      animation: fade-in-up 0.6s ease both;
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Field */
+    label { display: block; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 500; }
+    .field { margin-bottom: 20px; }
+
+    .text-input {
+      width: 100%;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 13px 18px;
+      font-family: var(--font-main);
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .text-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .text-input::placeholder { color: var(--text-muted); }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+    select.text-input {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+    }
+
+    /* Summary card */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .sum-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+    }
+    .sum-val   { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+    .sum-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 3px; }
+    .sum-sub   { font-size: 0.78rem; color: var(--accent2); font-family: var(--font-mono); margin-top: 2px; }
+
+    .wallet-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .wallet-preview::-webkit-scrollbar { width: 4px; }
+    .wallet-preview::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+    .witem {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 8px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .witem-addr { flex: 1; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .wchain { padding: 2px 6px; border-radius: 4px; background: rgba(108,99,255,0.15); font-size: 0.68rem; color: var(--accent2); }
+
+    /* Run panel */
+    .run-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      animation: fade-in-up 0.6s 0.3s ease both;
+    }
+
+    .btn-run {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 40px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 0 32px var(--accent-glow);
+    }
+    .btn-run:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 48px var(--accent-glow), 0 8px 32px rgba(108,99,255,0.4);
+    }
+    .btn-run:disabled {
+      opacity: 0.5; cursor: not-allowed; transform: none;
+      background: var(--bg-card2);
+    }
+    .btn-run .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--text-primary); }
+
+    /* Result overlay */
+    .result-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(6,11,24,0.95);
+      backdrop-filter: blur(16px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .result-overlay.show { display: flex; }
+
+    .result-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      padding: 40px;
+      max-width: 600px;
+      width: 100%;
+      text-align: center;
+      animation: zoom-in 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+    @keyframes zoom-in {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .verdict-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 28px;
+      border-radius: 100px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 24px;
+      letter-spacing: 0.05em;
+    }
+    .verdict-HIGH   { background: var(--risk-high-bg); border: 2px solid var(--risk-high); color: var(--risk-high); }
+    .verdict-MEDIUM { background: var(--risk-med-bg);  border: 2px solid var(--risk-med);  color: var(--risk-med); }
+    .verdict-LOW    { background: var(--risk-low-bg);  border: 2px solid var(--risk-low);  color: var(--risk-low); }
+
+    .result-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; }
+    .result-case  { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 28px; }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .metric {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .metric-val   { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); }
+    .metric-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; }
+
+    .result-summary {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      background: var(--bg-secondary);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: left;
+      margin-bottom: 24px;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    .audit-hash {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      word-break: break-all;
+    }
+
+    .result-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .btn-new {
+      padding: 12px 28px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-new:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-proto {
+      padding: 12px 28px;
+      border-radius: 10px;
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text-secondary);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-proto:hover { border-color: var(--accent); color: var(--text-primary); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="welcomepage.html" class="nav-logo">
+      <div class="nav-icon">⚛</div>
+      <div>
+        <div class="nav-title">AML AI Copilot</div>
+        <div class="nav-sub">SEA Quantathon 2026</div>
+      </div>
+    </a>
+    <div class="steps">
+      <div class="step done"><div class="step-num">✓</div>Welcome</div>
+      <div class="step-arrow">›</div>
+      <div class="step done"><div class="step-num">✓</div>File Sorting</div>
+      <div class="step-arrow">›</div>
+      <div class="step active"><div class="step-num">3</div>Naming & Run</div>
+    </div>
+  </nav>
+
+  <div class="wrapper">
+    <div class="page-header">
+      <h1 class="page-title">📝 Case Naming & Run</h1>
+      <p class="page-sub">Đặt tên case điều tra và khởi động pipeline phân tích AML</p>
+    </div>
+
+    <!-- Case naming -->
+    <div class="card">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Thông tin Case điều tra
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="case-name">Tên Case *</label>
+          <input type="text" class="text-input" id="case-name"
+                 placeholder="e.g. INVESTIGATION-2026-07-19"
+                 value="" />
+        </div>
+        <div class="field">
+          <label for="case-priority">Mức độ ưu tiên</label>
+          <select class="text-input" id="case-priority">
+            <option value="HIGH">🔴 High Priority</option>
+            <option value="MEDIUM" selected>🟡 Medium Priority</option>
+            <option value="LOW">🟢 Low Priority</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="case-notes">Ghi chú (tùy chọn)</label>
+        <input type="text" class="text-input" id="case-notes"
+               placeholder="e.g. Suspected mixer usage, cross-chain bridging..." />
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="card" style="animation-delay:0.1s">
+      <div class="card-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Tóm tắt phiên phân tích
+      </div>
+
+      <div class="summary-grid">
+        <div class="sum-item">
+          <div class="sum-val" id="sum-wallets">0</div>
+          <div class="sum-label">Wallet</div>
+        </div>
+        <div class="sum-item">
+          <div class="sum-val" id="sum-backend">—</div>
+          <div class="sum-label">Backend</div>
+          <div class="sum-sub" id="sum-backend-sub"></div>
+        </div>
+        <div class="sum-item">
+          <div class="sum-val">~2s</div>
+          <div class="sum-label">Est. Time</div>
+          <div class="sum-sub">per wallet</div>
+        </div>
+      </div>
+
+      <div class="wallet-preview" id="wallet-preview"></div>
+    </div>
+
+    <!-- Run -->
+    <div class="run-panel">
+      <a href="filesorting.html" class="btn-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+        Quay lại
+      </a>
+      <button class="btn-run" id="btn-run" onclick="runAnalysis()">
+        <div class="spinner" id="spinner"></div>
+        <svg id="run-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        🚀 Bắt đầu phân tích
+      </button>
+    </div>
+  </div>
+
+  <!-- RESULT OVERLAY -->
+  <div class="result-overlay" id="result-overlay">
+    <div class="result-box">
+      <div class="verdict-badge" id="verdict-badge">—</div>
+      <div class="result-title" id="result-title">—</div>
+      <div class="result-case" id="result-case">—</div>
+      <div class="metrics-row">
+        <div class="metric">
+          <div class="metric-val" id="m-qubo">—</div>
+          <div class="metric-label">QUBO Score</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m-fbeta">—</div>
+          <div class="metric-label">F-β Score</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val" id="m-runtime">—</div>
+          <div class="metric-label">Runtime</div>
+        </div>
+      </div>
+      <div class="result-summary" id="result-summary">—</div>
+      <div class="audit-hash" id="audit-hash">—</div>
+      <div class="result-actions">
+        <button class="btn-new" onclick="resetAll()">🔍 Phân tích mới</button>
+        <a href="04_prototype.html" class="btn-proto">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Full Prototype
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:7860';
+
+    // Load from sessionStorage
+    let wallets = JSON.parse(sessionStorage.getItem('aml_wallets') || '[]');
+    let backend = sessionStorage.getItem('aml_backend') || 'classical';
+
+    const backendLabels = {
+      classical: { label: 'Classical', sub: 'Simulated Annealing' },
+      quandela:  { label: 'Quandela',  sub: 'Perceval Photonic' },
+      qudora:    { label: 'Qudora',    sub: 'Qamelion Trapped-ion' },
+    };
+
+    // If no wallets, redirect
+    if (wallets.length === 0) {
+      window.location.href = 'filesorting.html';
+    }
+
+    // Auto-fill case name
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('case-name').value = `INVESTIGATION-${today}`;
+
+    // Populate summary
+    document.getElementById('sum-wallets').textContent = wallets.length;
+    document.getElementById('sum-backend').textContent = backendLabels[backend]?.label || backend;
+    document.getElementById('sum-backend-sub').textContent = backendLabels[backend]?.sub || '';
+
+    // Wallet preview
+    const preview = document.getElementById('wallet-preview');
+    wallets.forEach(w => {
+      const el = document.createElement('div');
+      el.className = 'witem';
+      el.innerHTML = `<span>🔑</span><span class="witem-addr">${w}</span><span class="wchain">ETH</span>`;
+      preview.appendChild(el);
+    });
+
+    // Run analysis
+    async function runAnalysis() {
+      const caseName = document.getElementById('case-name').value.trim();
+      if (!caseName) {
+        document.getElementById('case-name').focus();
+        document.getElementById('case-name').style.borderColor = 'var(--risk-high)';
+        return;
+      }
+
+      const btn = document.getElementById('btn-run');
+      const spinner = document.getElementById('spinner');
+      const runIcon = document.getElementById('run-icon');
+
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      runIcon.style.display = 'none';
+      btn.innerHTML = `<div class="spinner" style="display:block;width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite"></div> Đang phân tích...`;
+
+      try {
+        // Analyze first wallet (demo: one at a time)
+        const targetWallet = wallets[0];
+        const resp = await fetch(`${API}/api/screen`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet_address: targetWallet,
+            qubo_risk_score: 0.85,
+            dataset: 'default',
+          }),
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        showResult(data, caseName, targetWallet);
+      } catch (err) {
+        // Show demo result if API unavailable
+        showResult({
+          case_id: `AML-DEMO-${Date.now().toString(16).toUpperCase().slice(-8)}`,
+          risk_level: 'HIGH',
+          recommended_action: 'FREEZE',
+          qubo_risk_score: 0.92,
+          f_beta_score: 0.893,
+          runtime_seconds: 1.24,
+          audit_hash: 'sha256:demo_' + Math.random().toString(16).slice(2, 18),
+          summary: `[Demo Mode] Không kết nối được server tại ${API}. Đây là kết quả mẫu. Khởi động server bằng: py launcher.py`,
+        }, caseName, wallets[0]);
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> 🚀 Bắt đầu phân tích`;
+    }
+
+    function showResult(data, caseName, wallet) {
+      const risk = (data.risk_level || 'MEDIUM').toUpperCase();
+      const action = data.recommended_action || 'MONITOR';
+      const actionEmoji = { FREEZE: '🚨', MONITOR: '👁️', CLEAR: '✅' };
+
+      document.getElementById('verdict-badge').className = `verdict-badge verdict-${risk}`;
+      document.getElementById('verdict-badge').textContent = `${actionEmoji[action] || '⚠️'} ${action}`;
+      document.getElementById('result-title').textContent =
+        risk === 'HIGH' ? 'Nguy cơ CAO — Phát hiện rủi ro nghiêm trọng' :
+        risk === 'MEDIUM' ? 'Nguy cơ TRUNG BÌNH — Cần theo dõi thêm' :
+        'Nguy cơ THẤP — Ví an toàn';
+      document.getElementById('result-case').textContent = `Case: ${caseName}  ·  ${data.case_id || '—'}`;
+      document.getElementById('m-qubo').textContent = data.qubo_risk_score ? (data.qubo_risk_score * 100).toFixed(0) + '%' : '—';
+      document.getElementById('m-fbeta').textContent = data.f_beta_score ? data.f_beta_score.toFixed(3) : '—';
+      document.getElementById('m-runtime').textContent = data.runtime_seconds ? data.runtime_seconds.toFixed(2) + 's' : '—';
+      document.getElementById('result-summary').textContent = data.summary || 'Không có tóm tắt từ AI agents.';
+      document.getElementById('audit-hash').textContent = data.audit_hash ? `🔐 ${data.audit_hash}` : '';
+
+      document.getElementById('result-overlay').classList.add('show');
+    }
+
+    function resetAll() {
+      sessionStorage.clear();
+      window.location.href = 'welcomepage.html';
+    }
+  </script>
+</body>
+</html>

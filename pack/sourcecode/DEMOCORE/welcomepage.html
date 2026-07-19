@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AML AI Copilot — Welcome</title>
+  <meta name="description" content="AML AI Copilot — Quantum-powered crypto AML detection platform by QCFinOp." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-primary:   #060b18;
+      --bg-secondary: #0d1426;
+      --bg-card:      #111827;
+      --accent:       #6c63ff;
+      --accent2:      #a78bfa;
+      --accent-glow:  rgba(108,99,255,0.3);
+      --cyan:         #22d3ee;
+      --cyan-glow:    rgba(34,211,238,0.2);
+      --text-primary: #f1f5f9;
+      --text-secondary:#94a3b8;
+      --text-muted:   #475569;
+      --border:       #1e293b;
+      --border2:      #2d3f5c;
+      --font-main:    'Inter', sans-serif;
+      --font-mono:    'JetBrains Mono', monospace;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-main);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Grid background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    /* Radial glow */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 800px; height: 800px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+      z-index: 0;
+      pointer-events: none;
+      animation: pulse-glow 4s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.6; transform: translate(-50%,-50%) scale(1); }
+      50%       { opacity: 1;   transform: translate(-50%,-50%) scale(1.1); }
+    }
+
+    /* Floating particles */
+    .particles {
+      position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
+    }
+    .particle {
+      position: absolute;
+      width: 2px; height: 2px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0;
+      animation: float-up linear infinite;
+    }
+    @keyframes float-up {
+      0%   { opacity: 0; transform: translateY(0) scale(0); }
+      10%  { opacity: 0.8; }
+      90%  { opacity: 0.4; }
+      100% { opacity: 0; transform: translateY(-100vh) scale(1.5); }
+    }
+
+    .container {
+      position: relative; z-index: 1;
+      text-align: center;
+      max-width: 680px;
+      padding: 0 24px;
+      animation: fade-in-up 0.8s ease both;
+    }
+    @keyframes fade-in-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Logo */
+    .logo-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 120px; height: 120px;
+      border-radius: 32px;
+      background: linear-gradient(135deg, var(--bg-card), var(--bg-secondary));
+      border: 1px solid var(--border2);
+      margin-bottom: 32px;
+      box-shadow: 0 0 48px var(--accent-glow), 0 0 80px rgba(108,99,255,0.1);
+      animation: logo-float 3s ease-in-out infinite;
+    }
+    @keyframes logo-float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-8px); }
+    }
+    .logo-wrap img {
+      width: 80px; height: 80px;
+      object-fit: contain;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 100px;
+      background: rgba(108,99,255,0.12);
+      border: 1px solid rgba(108,99,255,0.3);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent2);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.5s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.2; }
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 0%, var(--accent2) 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .subtitle strong { color: var(--accent2); }
+
+    /* Stats row */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 52px;
+      flex-wrap: wrap;
+    }
+    .stat {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 2px;
+    }
+
+    /* CTA buttons */
+    .actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #8b5cf6);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: 0 0 32px var(--accent-glow);
+      letter-spacing: 0.02em;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 48px var(--accent-glow), 0 8px 32px rgba(108,99,255,0.4);
+    }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 32px;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--border2);
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+      background: rgba(108,99,255,0.07);
+      transform: translateY(-2px);
+    }
+
+    /* Backend status chips */
+    .backends {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+    .chip .dot { width: 6px; height: 6px; border-radius: 50%; }
+    .dot-green  { background: #22c55e; box-shadow: 0 0 6px #22c55e; }
+    .dot-purple { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      z-index: 1;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Particles -->
+  <div class="particles" id="particles"></div>
+
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <img src="nobackground.png" alt="AML AI Copilot"
+           onerror="this.style.display='none';this.parentNode.innerHTML='<svg width=\'64\' height=\'64\' viewBox=\'0 0 64 64\' fill=\'none\' xmlns=\'http://www.w3.org/2000/svg\'><circle cx=\'32\' cy=\'32\' r=\'28\' stroke=\'#6c63ff\' stroke-width=\'2\' opacity=\'0.5\'/><circle cx=\'32\' cy=\'32\' r=\'18\' stroke=\'#a78bfa\' stroke-width=\'2\'/><circle cx=\'32\' cy=\'32\' r=\'6\' fill=\'#6c63ff\'/><line x1=\'32\' y1=\'4\' x2=\'32\' y2=\'14\' stroke=\'#6c63ff\' stroke-width=\'2\'/><line x1=\'32\' y1=\'50\' x2=\'32\' y2=\'60\' stroke=\'#6c63ff\' stroke-width=\'2\'/><line x1=\'4\' y1=\'32\' x2=\'14\' y2=\'32\' stroke=\'#6c63ff\' stroke-width=\'2\'/><line x1=\'50\' y1=\'32\' x2=\'60\' y2=\'32\' stroke=\'#6c63ff\' stroke-width=\'2\'/></svg>';" />
+    </div>
+
+    <!-- Badge -->
+    <div class="badge">⚛ SEA Quantathon 2026 · QCFinOp</div>
+
+    <!-- Heading -->
+    <h1>AML AI Copilot</h1>
+
+    <p class="subtitle">
+      Quantum-powered crypto AML detection platform.<br/>
+      Detect <strong>money laundering</strong> with <strong>0% false positives</strong>
+      using hybrid QUBO optimization + autonomous AI agents.
+    </p>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value">0.0%</div>
+        <div class="stat-label">False Positive Rate</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">0.893</div>
+        <div class="stat-label">F-β Score</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">&lt;1s</div>
+        <div class="stat-label">Freeze Latency</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value">3</div>
+        <div class="stat-label">AI Agents</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="actions">
+      <a href="filesorting.html" class="btn-primary" id="start-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Bắt đầu phân tích
+      </a>
+      <a href="/docs" class="btn-secondary" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        API Docs
+      </a>
+    </div>
+
+    <!-- Backend status -->
+    <div class="backends">
+      <div class="chip"><span class="dot dot-green"></span>Classical SA</div>
+      <div class="chip"><span class="dot dot-purple"></span>Quandela Perceval</div>
+      <div class="chip"><span class="dot dot-purple"></span>Qudora Qamelion</div>
+    </div>
+  </div>
+
+  <div class="footer">AML AI Copilot · Quapp.cloud · MIT License</div>
+
+  <script>
+    // Generate particles
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 40; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      p.style.cssText = `
+        left: ${Math.random() * 100}%;
+        bottom: -10px;
+        width: ${Math.random() * 3 + 1}px;
+        height: ${Math.random() * 3 + 1}px;
+        animation-duration: ${Math.random() * 8 + 6}s;
+        animation-delay: ${Math.random() * 8}s;
+        background: ${Math.random() > 0.5 ? '#6c63ff' : '#22d3ee'};
+        opacity: 0;
+      `;
+      container.appendChild(p);
+    }
+
+    // Button ripple effect
+    document.getElementById('start-btn').addEventListener('click', function(e) {
+      this.style.transform = 'scale(0.97)';
+      setTimeout(() => this.style.transform = '', 150);
+    });
+  </script>
+</body>
+</html>
