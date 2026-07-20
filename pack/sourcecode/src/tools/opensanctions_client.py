@@ -3,7 +3,7 @@ OpenSanctions API Client — generated from openapi.json (yente 5.4.0)
 ====================================================================
 Source spec: src/tools/opensanctions_openapi.json
 
-Endpoints implemented (từ openapi.json paths):
+Endpoints implemented (from openapi.json paths):
   POST /match/{dataset}                          → match()
   GET  /search/{dataset}                         → search()
   GET  /entities/{entity_id}                     → get_entity()

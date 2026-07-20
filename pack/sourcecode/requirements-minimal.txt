@@ -1,5 +1,5 @@
 # Minimal requirements for DEMO MODE
-# Cài nhanh để test hệ thống trước
+# Quick install to test the system first
 
 numpy>=1.26.0
 scipy>=1.11.0

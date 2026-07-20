@@ -182,7 +182,7 @@ def select_backend(statuses: list[tuple[bool, str]]) -> BackendType:
                     print(f"\n  {C.RED}❌ Installation failed. Fallback to classical.{C.RESET}")
                     return "classical"
             else:
-                print(f"\n  {C.YELLOW}⚠️  Fallback về Classical backend (Simulated Annealing).{C.RESET}")
+                print(f"\n  {C.YELLOW}⚠️  Fallback to Classical backend (Simulated Annealing).{C.RESET}")
                 return "classical"
 
         return selected["id"]
@@ -262,7 +262,7 @@ def main():
     clr()
     print_banner()
 
-    # Check SDK availability cho tất cả backends
+    # Check SDK availability for all backends
     print(f"\n  {C.DIM}Checking SDK availability...{C.RESET}", end="\r")
     statuses = [check_sdk(b) for b in BACKENDS]
     print(" " * 50, end="\r")  # clear the checking line

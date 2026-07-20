@@ -118,7 +118,7 @@ def run_benchmark(req: BenchmarkRequest):
 
 
 def _get_backend_from_env() -> str:
-    """Đọc backend từ file .env (đã được set bởi launcher.py)"""
+    """Read backend from .env file (set by launcher.py)"""
     import os
     from dotenv import load_dotenv
     
@@ -128,16 +128,16 @@ def _get_backend_from_env() -> str:
     # Validate backend
     valid_backends = ["classical", "quandela", "qudora"]
     if backend not in valid_backends:
-        print(f"  ⚠️  Backend không hợp lệ: {backend}. Fallback về classical.")
+        print(f"  ⚠️  Invalid backend: {backend}. Fallback to classical.")
         backend = "classical"
     
-    # Check SDK availability và warning nếu thiếu
+    # Check SDK availability and warn if missing
     if backend == "quandela":
         try:
             import perceval  # noqa
             print(f"  ✅ Perceval: OK")
         except ImportError:
-            print("  ⚠️  perceval-quandela chưa cài! Fallback về classical.")
+            print("  ⚠️  perceval-quandela not installed! Fallback to classical.")
             backend = "classical"
     
     elif backend == "qudora":
@@ -145,14 +145,14 @@ def _get_backend_from_env() -> str:
             import qudora_sdk  # noqa
             print(f"  ✅ Qudora SDK: OK")
         except ImportError:
-            print("  ⚠️  qudora-sdk chưa cài! Fallback về classical.")
+            print("  ⚠️  qudora-sdk not installed! Fallback to classical.")
             backend = "classical"
     
     return backend
 
 
 def _free_port(port: int):
-    """Kill bất kỳ process nào đang giữ port trước khi bind."""
+    """Kill any process holding the port before binding."""
     import subprocess, platform
     try:
         if platform.system() == "Windows":
@@ -165,25 +165,25 @@ def _free_port(port: int):
                     pid = line.strip().split()[-1]
                     subprocess.run(["taskkill", "/F", "/PID", pid],
                                    capture_output=True)
-                    print(f"  🔪 Đã giải phóng port {port} (PID {pid})")
+                    print(f"  🔪 Freed port {port} (PID {pid})")
         else:
             subprocess.run(["fuser", "-k", f"{port}/tcp"], capture_output=True)
     except Exception as e:
-        print(f"  ⚠️  Không thể giải phóng port {port}: {e}")
+        print(f"  ⚠️  Could not free port {port}: {e}")
 
 
 if __name__ == "__main__":
     PORT = 7860
     backend = _get_backend_from_env()
-    _free_port(PORT)          # Tự động giải phóng port cũ
-    import time; time.sleep(0.5)  # Chờ OS release
+    _free_port(PORT)          # Automatically free old port
+    import time; time.sleep(0.5)  # Wait for OS release
     print("═" * 60)
-    print(f"  🚀 Khởi động AML AI Copilot Server...")
+    print(f"  🚀 Starting AML AI Copilot Server...")
     print(f"  🔬 Quantum Backend : {backend.upper()}")
     print(f"  🌐 UI              : http://localhost:{PORT}")
     print(f"  📡 API             : http://localhost:{PORT}/api/screen")
     print(f"  📖 Docs            : http://localhost:{PORT}/docs")
-    print(f"\n  💡 Tip: Dùng launcher.py để thay đổi backend")
+    print(f"\n  💡 Tip: Use launcher.py to change the backend")
     print("═" * 60 + "\n")
     uvicorn.run("server:app", host="0.0.0.0", port=PORT, reload=False)
 

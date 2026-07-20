@@ -1,33 +1,33 @@
-# 🚀 HƯỚNG DẪN CHẠY FULL PROJECT
-**AML AI Copilot - Hệ thống Hybrid Quantum-Agentic AML hoàn chỉnh**
+# 🚀 FULL PROJECT EXECUTION GUIDE
+**AML AI Copilot - Complete Hybrid Quantum-Agentic AML System**
 
 ---
 
-## 📋 MỤC LỤC
+## 📋 TABLE OF CONTENTS
 
-1. [Tổng quan](#tổng-quan)
-2. [Yêu cầu hệ thống](#yêu-cầu-hệ-thống)
-3. [Cài đặt bước 1: Dependencies](#bước-1-cài-đặt-dependencies)
-4. [Cài đặt bước 2: API Keys](#bước-2-cấu-hình-api-keys)
-5. [Cài đặt bước 3: Kiểm tra](#bước-3-kiểm-tra-cài-đặt)
-6. [Chạy hệ thống](#chạy-hệ-thống)
+1. [Overview](#overview)
+2. [System Requirements](#system-requirements)
+3. [Installation Step 1: Dependencies](#step-1-install-dependencies)
+4. [Installation Step 2: API Keys](#step-2-configure-api-keys)
+5. [Installation Step 3: Verification](#step-3-verify-installation)
+6. [Run the System](#run-the-system)
 7. [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🎯 TỔNG QUAN
+## 🎯 OVERVIEW
 
-### So sánh: Demo vs Full Project
+### Comparison: Demo vs Full Project
 
-| Tính năng | DEMOCORE (Demo) | Full Project |
+| Feature | DEMOCORE (Demo) | Full Project |
 |-----------|----------------|--------------|
-| **Dữ liệu** | Synthetic (giả lập) | Real blockchain data (thực) |
+| **Data** | Synthetic | Real blockchain data |
 | **QUBO** | Simulated Annealing | Quantum hardware / SA |
 | **Agents** | Mock data | Real API calls (Etherscan, OFAC) |
-| **API Keys** | ❌ Không cần | ✅ Cần (Anthropic, Etherscan, v.v.) |
-| **Mục đích** | Demo & Testing | Production-ready |
+| **API Keys** | ❌ Not required | ✅ Required (Anthropic, Etherscan, etc.) |
+| **Purpose** | Demo & Testing | Production-ready |
 
-### Full Project bao gồm:
+### Full Project includes:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -61,101 +61,101 @@
 
 ---
 
-## 💻 YÊU CẦU HỆ THỐNG
+## 💻 SYSTEM REQUIREMENTS
 
-### Phần cứng tối thiểu:
-- **CPU:** 4 cores (Intel i5/AMD Ryzen 5 trở lên)
-- **RAM:** 8GB (khuyến nghị 16GB)
-- **Disk:** 5GB trống
-- **Internet:** Kết nối ổn định (cho API calls)
+### Minimum Hardware:
+- **CPU:** 4 cores (Intel i5/AMD Ryzen 5 or higher)
+- **RAM:** 8GB (16GB recommended)
+- **Disk:** 5GB free
+- **Internet:** Stable connection (for API calls)
 
-### Phần mềm:
-- **Python:** 3.14+ (bạn đã có ✅)
-- **pip:** Package manager (đi kèm Python)
-- **Git:** (Optional) cho version control
+### Software:
+- **Python:** 3.14+ (you already have this ✅)
+- **pip:** Package manager (included with Python)
+- **Git:** (Optional) for version control
 
-### API Keys cần thiết:
+### Required API Keys:
 
-| Service | Mức độ | Link đăng ký | Chi phí |
+| Service | Level | Registration Link | Cost |
 |---------|--------|--------------|---------|
-| **Anthropic Claude** | 🔴 BẮT BUỘC | https://console.anthropic.com/ | $5 credit miễn phí |
-| **Etherscan** | 🟡 Khuyến nghị | https://etherscan.io/apis | Miễn phí (5 calls/sec) |
-| **OpenSanctions** | 🟢 Tùy chọn | https://www.opensanctions.org/ | Miễn phí (public data) |
-| **OpenAI** | 🟢 Tùy chọn | https://platform.openai.com/ | Alternative to Claude |
-| **Quapp.cloud** | 🟢 Tùy chọn | https://quapp.cloud/ | Quantum hardware access |
+| **Anthropic Claude** | 🔴 REQUIRED | https://console.anthropic.com/ | $5 free credit |
+| **Etherscan** | 🟡 Recommended | https://etherscan.io/apis | Free (5 calls/sec) |
+| **OpenSanctions** | 🟢 Optional | https://www.opensanctions.org/ | Free (public data) |
+| **OpenAI** | 🟢 Optional | https://platform.openai.com/ | Alternative to Claude |
+| **Quapp.cloud** | 🟢 Optional | https://quapp.cloud/ | Quantum hardware access |
 
-**Lưu ý:** Nếu không có API keys, bạn vẫn chạy được ở **DEMO_MODE** (xem bên dưới).
+**Note:** If you don't have API keys, you can still run in **DEMO_MODE** (see below).
 
 ---
 
-## 📦 BƯỚC 1: CÀI ĐẶT DEPENDENCIES
+## 📦 STEP 1: INSTALL DEPENDENCIES
 
-### 1.1. Mở Terminal trong thư mục project
+### 1.1. Open Terminal in project directory
 
 ```powershell
 cd "c:\Users\ACE DUKE\OneDrive\Máy tính\NEW PROJECT\AML-AI-Copilot\pack\sourcecode"
 ```
 
-### 1.2. (Khuyến nghị) Tạo Virtual Environment
+### 1.2. (Recommended) Create Virtual Environment
 
 ```powershell
-# Tạo môi trường ảo
+# Create virtual environment
 py -m venv venv
 
-# Kích hoạt môi trường ảo
+# Activate virtual environment
 .\venv\Scripts\Activate.ps1
 ```
 
-**Lưu ý:** Nếu gặp lỗi Execution Policy, chạy:
+**Note:** If you encounter Execution Policy errors, run:
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### 1.3. Cài đặt dependencies
+### 1.3. Install dependencies
 
 ```powershell
-# Cài đặt tất cả packages
+# Install all packages
 py -m pip install --upgrade pip
 py -m pip install -r requirements.txt
 ```
 
-**Thời gian:** ~5-10 phút (tùy tốc độ internet)
+**Time:** ~5-10 minutes (depending on internet speed)
 
-### 1.4. Xác nhận cài đặt
+### 1.4. Confirm installation
 
 ```powershell
-# Kiểm tra các packages quan trọng
+# Check important packages
 py -c "import numpy; print('NumPy:', numpy.__version__)"
 py -c "import networkx; print('NetworkX:', networkx.__version__)"
 py -c "import crewai; print('CrewAI:', crewai.__version__)"
 ```
 
-Nếu không có lỗi → Cài đặt thành công ✅
+If there are no errors → Installation successful ✅
 
 ---
 
-## 🔑 BƯỚC 2: CẤU HÌNH API KEYS
+## 🔑 STEP 2: CONFIGURE API KEYS
 
-### 2.1. Tạo file .env
+### 2.1. Create .env file
 
 ```powershell
-# Copy file mẫu
+# Copy example file
 Copy-Item .env.example .env
 ```
 
-### 2.2. Chỉnh sửa file .env
+### 2.2. Edit .env file
 
-Mở file `.env` bằng Notepad hoặc VS Code:
+Open the `.env` file using Notepad or VS Code:
 
 ```powershell
 notepad .env
-# hoặc
+# or
 code .env
 ```
 
-### 2.3. Điền API keys
+### 2.3. Fill in API keys
 
-#### 🔴 BẮT BUỘC: Anthropic Claude
+#### 🔴 REQUIRED: Anthropic Claude
 
 ```env
 ANTHROPIC_API_KEY=sk-ant-api03-xxx...xxx
@@ -163,74 +163,74 @@ LLM_PROVIDER=anthropic
 LLM_MODEL=claude-sonnet-4-5
 ```
 
-**Cách lấy Anthropic API key:**
-1. Truy cập: https://console.anthropic.com/
-2. Đăng ký tài khoản (có $5 credit miễn phí)
-3. Vào **API Keys** → **Create Key**
-4. Copy key bắt đầu bằng `sk-ant-api03-...`
+**How to get Anthropic API key:**
+1. Visit: https://console.anthropic.com/
+2. Register an account (comes with $5 free credit)
+3. Go to **API Keys** → **Create Key**
+4. Copy the key starting with `sk-ant-api03-...`
 
-#### 🟡 KHUYẾN NGHỊ: Etherscan
+#### 🟡 RECOMMENDED: Etherscan
 
 ```env
 ETHERSCAN_API_KEY=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-**Cách lấy Etherscan API key:**
-1. Truy cập: https://etherscan.io/register
-2. Đăng ký tài khoản (miễn phí)
-3. Vào **API-KEYs** → **Add**
-4. Copy key (32 ký tự)
+**How to get Etherscan API key:**
+1. Visit: https://etherscan.io/register
+2. Register an account (free)
+3. Go to **API-KEYs** → **Add**
+4. Copy the key (32 characters)
 
-#### 🟢 TÙY CHỌN: OpenSanctions
+#### 🟢 OPTIONAL: OpenSanctions
 
 ```env
 OPENSANCTIONS_API_KEY=your_opensanctions_key
 ```
 
-**Hoặc** để trống nếu dùng public data (không cần key).
+**Or** leave empty to use public data (no key required).
 
-### 2.4. Cấu hình Quantum Backend
+### 2.4. Configure Quantum Backend
 
-Nếu không có quantum hardware, dùng classical:
+If you don't have quantum hardware, use classical:
 
 ```env
 QUANTUM_BACKEND=classical
 ```
 
-### 2.5. Lưu file .env
+### 2.5. Save .env file
 
-Nhấn `Ctrl+S` để lưu.
+Press `Ctrl+S` to save.
 
 ---
 
-## ✅ BƯỚC 3: KIỂM TRA CÀI ĐẶT
+## ✅ STEP 3: VERIFY INSTALLATION
 
-### 3.1. Kiểm tra config
+### 3.1. Check config
 
 ```powershell
 py -c "from src.config import *; print('Config loaded successfully')"
 ```
 
-### 3.2. Chạy unit tests
+### 3.2. Run unit tests
 
 ```powershell
 py -m pytest tests/ -v
 ```
 
-**Kết quả mong đợi:**
+**Expected result:**
 ```
 ======================== 28 passed in 12.34s =========================
 ```
 
-Nếu có test fail, xem [Troubleshooting](#troubleshooting) bên dưới.
+If any test fails, see [Troubleshooting](#troubleshooting) below.
 
-### 3.3. Chạy benchmark
+### 3.3. Run benchmark
 
 ```powershell
 py -m src.quantum.benchmark --demo
 ```
 
-**Kết quả mong đợi:**
+**Expected result:**
 ```
 [Benchmark] Running QUBO optimization on demo graph...
 [Benchmark] FPR: 0.0% | F-β: 0.893 | Runtime: 1.23s
@@ -239,18 +239,18 @@ py -m src.quantum.benchmark --demo
 
 ---
 
-## 🚀 CHẠY HỆ THỐNG
+## 🚀 RUN THE SYSTEM
 
-### Mode 1: Chạy Pipeline Handler (Full System)
+### Mode 1: Run Pipeline Handler (Full System)
 
-#### A. Chạy với Quapp.cloud (Production)
+#### A. Run with Quapp.cloud (Production)
 
 ```powershell
-# Chạy handler cho 1 wallet cụ thể
+# Run handler for 1 specific wallet
 py -c "from src.pipeline.handler import handler; import json; result = handler({'wallet_address': '0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b', 'backend': 'classical', 'shots': 1024, 'mode': 'hybrid'}); print(json.dumps(result, indent=2))"
 ```
 
-**Output mẫu:**
+**Sample Output:**
 ```json
 {
   "status": "freeze_triggered",
@@ -268,23 +268,23 @@ py -c "from src.pipeline.handler import handler; import json; result = handler({
 }
 ```
 
-#### B. Chạy với Demo Mode (Không cần API keys)
+#### B. Run with Demo Mode (No API keys needed)
 
-Chỉnh sửa `.env`:
+Edit `.env`:
 ```env
 DEMO_MODE=true
 ```
 
-Sau đó chạy lại command trên.
+Then run the command above again.
 
 ---
 
-### Mode 2: Chạy từng Component riêng lẻ
+### Mode 2: Run Individual Components
 
 #### A. QUBO Optimizer
 
 ```powershell
-# Test QUBO trên synthetic graph
+# Test QUBO on synthetic graph
 py -c "from src.quantum.hybrid_optimizer import HybridQuantumOptimizer; from src.data.etherscan_graph_builder import build_demo_graph; graph = build_demo_graph('0xTEST'); opt = HybridQuantumOptimizer('classical'); result = opt.optimize(graph); print(f'FPR: {result.false_positive_rate:.4f}, F-β: {result.f_beta_score:.4f}')"
 ```
 
@@ -295,22 +295,22 @@ py -c "from src.quantum.hybrid_optimizer import HybridQuantumOptimizer; from src
 py -c "from src.agents.multi_agent_crew import run_aml_crew; from src.models import AgentInput; from datetime import datetime; input_data = AgentInput(wallet_address='0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b', qubo_risk_score=0.92, qubo_flagged_nodes=['0x123'], trace_id='test-001'); report = run_aml_crew(input_data); print(f'Risk: {report.risk_level}, Action: {report.recommended_action}')"
 ```
 
-**Lưu ý:** Cần có `ANTHROPIC_API_KEY` để chạy agents.
+**Note:** `ANTHROPIC_API_KEY` is required to run agents.
 
-#### C. Graph Builder (với Etherscan)
+#### C. Graph Builder (with Etherscan)
 
 ```powershell
-# Build real transaction graph từ Etherscan
+# Build real transaction graph from Etherscan
 py -c "from src.data.etherscan_graph_builder import build_tx_graph_from_wallet; graph = build_tx_graph_from_wallet('0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b', 'eth', hops=2, max_nodes=50); print(f'Graph: {graph.graph.number_of_nodes()} nodes, {graph.graph.number_of_edges()} edges')"
 ```
 
-**Lưu ý:** Cần có `ETHERSCAN_API_KEY`.
+**Note:** `ETHERSCAN_API_KEY` is required.
 
 ---
 
-### Mode 3: Chạy Web Server (REST API)
+### Mode 3: Run Web Server (REST API)
 
-Tạo file `server.py` (nếu chưa có):
+Create `server.py` file (if it doesn't exist):
 
 ```python
 # server.py
@@ -338,17 +338,17 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
 ```
 
-Cài Flask:
+Install Flask:
 ```powershell
 py -m pip install flask
 ```
 
-Chạy server:
+Run server:
 ```powershell
 py server.py
 ```
 
-Test từ browser hoặc Postman:
+Test from browser or Postman:
 ```
 POST http://localhost:5000/analyze
 Content-Type: application/json
@@ -363,15 +363,15 @@ Content-Type: application/json
 
 ---
 
-## 🎯 CÁC CHỨC NĂNG CHÍNH
+## 🎯 KEY FEATURES
 
-### 1. Phân tích 1 wallet
+### 1. Analyze 1 wallet
 
 ```powershell
 py analyze_wallet.py 0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b
 ```
 
-Tạo file `analyze_wallet.py`:
+Create file `analyze_wallet.py`:
 ```python
 import sys
 from src.pipeline.handler import handler
@@ -393,7 +393,7 @@ result = handler(event)
 print(json.dumps(result, indent=2))
 ```
 
-### 2. Batch analysis (nhiều wallets)
+### 2. Batch analysis (multiple wallets)
 
 ```powershell
 py batch_analyze.py wallets.txt
@@ -416,34 +416,34 @@ py -m src.quantum.benchmark --wallets 100 --backend classical
 
 ## 🐛 TROUBLESHOOTING
 
-### Lỗi 1: ModuleNotFoundError
+### Error 1: ModuleNotFoundError
 
-**Triệu chứng:**
+**Symptoms:**
 ```
 ModuleNotFoundError: No module named 'crewai'
 ```
 
-**Giải pháp:**
+**Solution:**
 ```powershell
-# Kích hoạt lại venv
+# Reactivate venv
 .\venv\Scripts\Activate.ps1
 
-# Cài lại dependencies
+# Reinstall dependencies
 py -m pip install -r requirements.txt
 ```
 
 ---
 
-### Lỗi 2: API Key Invalid
+### Error 2: API Key Invalid
 
-**Triệu chứng:**
+**Symptoms:**
 ```
 AuthenticationError: Invalid API key
 ```
 
-**Giải pháp:**
-1. Kiểm tra file `.env` có đúng format không
-2. Xác nhận API key còn hạn sử dụng
+**Solution:**
+1. Check if the `.env` file is properly formatted
+2. Verify the API key is not expired
 3. Test API key:
 ```powershell
 py -c "import os; from dotenv import load_dotenv; load_dotenv(); print('Anthropic key:', os.getenv('ANTHROPIC_API_KEY')[:20] + '...')"
@@ -451,75 +451,75 @@ py -c "import os; from dotenv import load_dotenv; load_dotenv(); print('Anthropi
 
 ---
 
-### Lỗi 3: Rate Limit Exceeded
+### Error 3: Rate Limit Exceeded
 
-**Triệu chứng:**
+**Symptoms:**
 ```
 RateLimitError: API rate limit exceeded
 ```
 
-**Giải pháp:**
-- **Etherscan:** Free tier = 5 calls/sec. Chờ 1 giây giữa các calls.
-- **Anthropic:** Free tier = 50 requests/day. Nâng cấp plan hoặc dùng DEMO_MODE.
+**Solution:**
+- **Etherscan:** Free tier = 5 calls/sec. Wait 1 second between calls.
+- **Anthropic:** Free tier = 50 requests/day. Upgrade plan or use DEMO_MODE.
 
 ```env
-# Trong .env, bật demo mode
+# In .env, turn on demo mode
 DEMO_MODE=true
 ```
 
 ---
 
-### Lỗi 4: Memory Error (Graph quá lớn)
+### Error 4: Memory Error (Graph too large)
 
-**Triệu chứng:**
+**Symptoms:**
 ```
 MemoryError: Unable to allocate array
 ```
 
-**Giải pháp:**
-Giảm kích thước graph trong `.env`:
+**Solution:**
+Reduce graph size in `.env`:
 ```env
-QUBO_MAX_NODES=100  # Giảm từ 500 xuống 100
+QUBO_MAX_NODES=100  # Decrease from 500 to 100
 ```
 
 ---
 
-### Lỗi 5: Timeout
+### Error 5: Timeout
 
-**Triệu chứng:**
+**Symptoms:**
 ```
 TimeoutError: Operation timed out after 300s
 ```
 
-**Giải pháp:**
-Tăng timeout trong `.env`:
+**Solution:**
+Increase timeout in `.env`:
 ```env
-AGENT_TIMEOUT_SECONDS=600  # Tăng từ 300 lên 600
-QUANTUM_TIMEOUT_SECONDS=60  # Tăng từ 30 lên 60
+AGENT_TIMEOUT_SECONDS=600  # Increase from 300 to 600
+QUANTUM_TIMEOUT_SECONDS=60  # Increase from 30 to 60
 ```
 
 ---
 
-### Lỗi 6: Tests Fail
+### Error 6: Tests Fail
 
-**Triệu chứng:**
+**Symptoms:**
 ```
 FAILED tests/test_qubo.py::test_qubo_optimization
 ```
 
-**Giải pháp:**
-1. Kiểm tra Python version:
+**Solution:**
+1. Check Python version:
 ```powershell
-py --version  # Phải >= 3.14
+py --version  # Must be >= 3.14
 ```
 
-2. Cài lại dependencies clean:
+2. Clean reinstall dependencies:
 ```powershell
 py -m pip uninstall -y -r requirements.txt
 py -m pip install -r requirements.txt
 ```
 
-3. Nếu vẫn fail, skip test đó:
+3. If it still fails, skip that test:
 ```powershell
 py -m pytest tests/ -v -k "not test_qubo_optimization"
 ```
@@ -528,15 +528,15 @@ py -m pytest tests/ -v -k "not test_qubo_optimization"
 
 ## 📊 MONITORING & LOGS
 
-### Xem logs realtime
+### View real-time logs
 
 ```powershell
-# Trong .env, set log level
+# In .env, set log level
 LOG_LEVEL=DEBUG
 TRACE_ENABLED=true
 ```
 
-Logs sẽ in ra console với format:
+Logs will be printed to console in format:
 ```
 [2026-07-18 10:30:45] [INFO] [handler.py:123] Pipeline start | wallet=0xd90e... | trace_id=abc123
 [2026-07-18 10:30:46] [INFO] [qubo.py:45] QUBO Done | FPR=0.0% | F-β=0.893
@@ -544,9 +544,9 @@ Logs sẽ in ra console với format:
 ...
 ```
 
-### Lưu logs vào file
+### Save logs to file
 
-Thêm vào đầu script:
+Add to the top of script:
 ```python
 import logging
 logging.basicConfig(
@@ -558,59 +558,59 @@ logging.basicConfig(
 
 ---
 
-## 🎓 CHẠY TỪ ĐẦU (Checklist)
+## 🎓 FULL EXECUTION (Checklist)
 
-### ✅ Checklist đầy đủ
+### ✅ Complete Checklist
 
-- [ ] **Bước 1:** Cài Python 3.14+ (Đã có ✅)
-- [ ] **Bước 2:** Tạo virtual environment
-- [ ] **Bước 3:** Cài dependencies từ requirements.txt
-- [ ] **Bước 4:** Copy .env.example → .env
-- [ ] **Bước 5:** Điền API keys vào .env (ít nhất ANTHROPIC_API_KEY)
-- [ ] **Bước 6:** Chạy pytest kiểm tra (28/28 passed)
-- [ ] **Bước 7:** Chạy benchmark test
-- [ ] **Bước 8:** Chạy handler với 1 wallet test
-- [ ] **Bước 9:** (Optional) Chạy web server
-- [ ] **Bước 10:** (Optional) Deploy lên Quapp.cloud
+- [ ] **Step 1:** Install Python 3.14+ (Already have ✅)
+- [ ] **Step 2:** Create virtual environment
+- [ ] **Step 3:** Install dependencies from requirements.txt
+- [ ] **Step 4:** Copy .env.example → .env
+- [ ] **Step 5:** Fill in API keys into .env (at least ANTHROPIC_API_KEY)
+- [ ] **Step 6:** Run pytest checks (28/28 passed)
+- [ ] **Step 7:** Run benchmark test
+- [ ] **Step 8:** Run handler with 1 test wallet
+- [ ] **Step 9:** (Optional) Run web server
+- [ ] **Step 10:** (Optional) Deploy to Quapp.cloud
 
 ---
 
-## 🚀 NEXT STEPS (Sau khi chạy thành công)
+## 🚀 NEXT STEPS (After successful run)
 
-### 1. Tối ưu hiệu suất
-- Chạy benchmark với nhiều wallets
-- Điều chỉnh QAOA_P_MIN/MAX cho quantum backend
-- Profile performance với cProfile
+### 1. Performance optimization
+- Run benchmark with multiple wallets
+- Adjust QAOA_P_MIN/MAX for quantum backend
+- Profile performance with cProfile
 
-### 2. Tích hợp thêm data sources
-- Thêm BSC, Polygon, Arbitrum support
-- Tích hợp CryptoScamDB API
-- Thêm PEP (Politically Exposed Person) database
+### 2. Integrate more data sources
+- Add BSC, Polygon, Arbitrum support
+- Integrate CryptoScamDB API
+- Add PEP (Politically Exposed Person) database
 
-### 3. Deploy production
+### 3. Production deployment
 - Dockerize application
-- Setup CI/CD với GitHub Actions
-- Deploy lên AWS/GCP/Azure hoặc Quapp.cloud
+- Setup CI/CD with GitHub Actions
+- Deploy to AWS/GCP/Azure or Quapp.cloud
 
 ### 4. Monitoring & Alerting
 - Setup Prometheus metrics
-- Integrate với Grafana dashboards
+- Integrate with Grafana dashboards
 - Configure PagerDuty/Slack alerts
 
 ---
 
-## 📞 HỖ TRỢ
+## 📞 SUPPORT
 
-Nếu gặp vấn đề, kiểm tra:
+If you encounter issues, check:
 
-1. **README.md** — Tổng quan project
-2. **DEMOCORE/HOW_IT_WORKS.md** — Giải thích kiến trúc chi tiết
-3. **GitHub Issues** — Tìm kiếm lỗi tương tự
+1. **README.md** — Project overview
+2. **DEMOCORE/HOW_IT_WORKS.md** — Detailed architecture explanation
+3. **GitHub Issues** — Search for similar errors
 4. **Discord/Slack** — QCFinOp community
 
 ---
 
-**Chúc bạn chạy thành công! 🎉**
+**Good luck with your execution! 🎉**
 
 **Team:** QCFinOp · SEA Quantathon 2026  
 **Architecture:** Prof. Hans  

@@ -54,21 +54,21 @@ AML-AI-Copilot/
 
 ## 🚀 Quick Start
 
-### Option A — Mở demo trong trình duyệt (không cần cài gì)
+### Option A — Open demo in browser (no setup needed)
 
-Mở file này trực tiếp trong Chrome/Edge/Firefox:
+Open this file directly in Chrome/Edge/Firefox:
 
 ```
 pack/sourcecode/DEMOCORE/04_prototype.html
 ```
 
-Trải nghiệm đầy đủ workflow: Input Wallet → QUBO Analysis → AI Agents → Compliance Report.
+Experience the full workflow: Input Wallet → QUBO Analysis → AI Agents → Compliance Report.
 
 ---
 
-### Option B — Chạy Full Backend System
+### Option B — Run Full Backend System
 
-#### Bước 1: Cài Python dependencies
+#### Step 1: Install Python dependencies
 
 ```powershell
 cd "pack/sourcecode"
@@ -76,85 +76,85 @@ py -m pip install -r requirements.txt
 py -m pip install fastapi uvicorn[standard]
 ```
 
-#### Bước 2: Cấu hình API Keys
+#### Step 2: Configure API Keys
 
 ```powershell
-# Copy file mẫu
+# Copy example file
 copy .env.example .env
 
-# Mở và điền API keys
+# Open and fill in API keys
 notepad .env
 ```
 
-Các key quan trọng trong `.env`:
+Important keys in `.env`:
 
-| Key | Bắt buộc | Dịch vụ |
+| Key | Required | Service |
 |-----|----------|---------|
-| `ANTHROPIC_API_KEY` | ✅ Bắt buộc | Claude AI agents |
-| `ETHERSCAN_API_KEY` | 🟡 Khuyến nghị | Live blockchain data |
-| `OPENSANCTIONS_API_KEY` | 🟢 Tùy chọn | Sanctions database |
-| `QUAPP_API_KEY` | 🟢 Tùy chọn | Quantum cloud (Qudora) |
+| `ANTHROPIC_API_KEY` | ✅ Required | Claude AI agents |
+| `ETHERSCAN_API_KEY` | 🟡 Recommended | Live blockchain data |
+| `OPENSANCTIONS_API_KEY` | 🟢 Optional | Sanctions database |
+| `QUAPP_API_KEY` | 🟢 Optional | Quantum cloud (Qudora) |
 
-#### Bước 3: Khởi động ứng dụng
+#### Step 3: Start the application
 
 ```powershell
 py launcher.py
 ```
 
-Launcher sẽ hiển thị menu chọn **Quantum Backend** rồi khởi động server.
+The launcher will display a menu to choose the **Quantum Backend** and then start the server.
 
 ---
 
 ## ⚛ Quantum Backend Selector
 
-Khi chạy `py launcher.py`, hệ thống sẽ hiển thị bảng chọn backend:
+When running `py launcher.py`, the system will display a backend selection menu:
 
 ```
 ════════════════════════════════════════════════════════════════════════
   ⚛  AML AI COPILOT  —  QUANTUM BACKEND SELECTOR
 ════════════════════════════════════════════════════════════════════════
 
-  Backend     Tên                      Loại               Trạng thái
+  Backend     Name                      Type               Status
   ──────────────────────────────────────────────────────────────────
-  qudora      Qamelion (trapped-ion)   ⚛ Lượng tử thật   ✅ Đang chạy
-  quandela    Perceval (photonic)      ⚛ Lượng tử thật   ✅ Đang chạy v1.2.4
-  classical   Simulated Annealing      💻 Classical CPU   ✅ Đang chạy
+  qudora      Qamelion (trapped-ion)    ⚛ Quantum Hardware ✅ Running
+  quandela    Perceval (photonic)       ⚛ Quantum Hardware ✅ Running v1.2.4
+  classical   Simulated Annealing       💻 Classical CPU   ✅ Running
   ──────────────────────────────────────────────────────────────────
 
-  Chọn backend muốn sử dụng:
-  [1] qudora     — Trapped-ion quantum emulator từ Qudora  (Cần QUAPP_API_KEY)
-  [2] quandela   — Photonic quantum simulator từ Quandela
-  [3] classical  — Classical optimization, không cần SDK lượng tử (mặc định)
+  Choose the backend you want to use:
+  [1] qudora     — Trapped-ion quantum emulator from Qudora  (Requires QUAPP_API_KEY)
+  [2] quandela   — Photonic quantum simulator from Quandela
+  [3] classical  — Classical optimization, no quantum SDK required (default)
 ```
 
-| Backend | SDK | Mô tả |
-|---------|-----|-------|
-| `qudora` | `qudora-sdk` (+ Qiskit 2.1.2) | Trapped-ion quantum emulator từ Qudora Cloud |
-| `quandela` | `perceval-quandela 1.2.4` | Photonic quantum circuit simulator từ Quandela |
-| `classical` | Không cần SDK | Simulated Annealing — luôn khả dụng |
+| Backend | SDK | Description |
+|---------|-----|-------------|
+| `qudora` | `qudora-sdk` (+ Qiskit 2.1.2) | Trapped-ion quantum emulator from Qudora Cloud |
+| `quandela` | `perceval-quandela 1.2.4` | Photonic quantum circuit simulator from Quandela |
+| `classical` | No SDK required | Simulated Annealing — always available |
 
-> **Cài SDK quantum (tuỳ chọn):**
+> **Install quantum SDK (optional):**
 > ```powershell
 > py -m pip install perceval-quandela   # Quandela
 > py -m pip install qudora-sdk          # Qudora (Qiskit-based)
 > ```
-> Nếu SDK chưa cài, launcher sẽ tự động hỏi có muốn cài ngay không. Nếu từ chối, fallback về `classical`.
+> If the SDK is not installed, the launcher will automatically ask if you want to install it now. If declined, it falls back to `classical`.
 
 ---
 
 ## 🌐 Web Interface
 
-Sau khi khởi động, truy cập:
+After starting, access:
 
-| Endpoint | Mô tả |
-|----------|-------|
-| **http://localhost:7860** | 🖥️ Giao diện Web UI chính |
-| http://localhost:7860/api/screen | 📡 POST API — phân tích wallet |
-| http://localhost:7860/api/benchmark | 📊 POST API — chạy QUBO benchmark |
+| Endpoint | Description |
+|----------|-------------|
+| **http://localhost:7860** | 🖥️ Main Web UI |
+| http://localhost:7860/api/screen | 📡 POST API — wallet analysis |
+| http://localhost:7860/api/benchmark | 📊 POST API — run QUBO benchmark |
 | http://localhost:7860/docs | 📖 Swagger API documentation |
 | http://localhost:7860/health | ❤️ Health check |
 
-### Ví dụ gọi API
+### API Call Example
 
 ```bash
 curl -X POST http://localhost:7860/api/screen \
@@ -236,24 +236,24 @@ QUBO risk_score ≥ 0.85
 
 ## 📄 Key Documents
 
-| File | Nội dung |
-|------|----------|
-| [`HUONG_DAN_CHAY_FULL_PROJECT.md`](HUONG_DAN_CHAY_FULL_PROJECT.md) | Hướng dẫn chi tiết từng bước chạy full project |
-| [`TOM_TAT_HE_THONG.md`](TOM_TAT_HE_THONG.md) | Tóm tắt kiến trúc hệ thống |
-| [`DEMOCORE/04_prototype.html`](DEMOCORE/04_prototype.html) | MVP prototype UI (mở thẳng trong browser) |
-| [`.env.example`](.env.example) | Mẫu cấu hình API keys |
+| File | Content |
+|------|---------|
+| [`FULL_PROJECT_GUIDE.md`](FULL_PROJECT_GUIDE.md) | Detailed step-by-step guide to run the full project |
+| [`SYSTEM_SUMMARY.md`](SYSTEM_SUMMARY.md) | System architecture summary |
+| [`DEMOCORE/04_prototype.html`](DEMOCORE/04_prototype.html) | MVP prototype UI (open directly in browser) |
+| [`.env.example`](.env.example) | API keys configuration template |
 
 ---
 
 ## 🔧 Troubleshooting
 
-| Lỗi | Nguyên nhân | Giải pháp |
-|-----|-------------|-----------|
-| `Port already in use` | Port 7860 bị chiếm | Đóng ứng dụng cũ hoặc đổi port trong `server.py` |
-| `ModuleNotFoundError: crewai` | Chưa cài dependencies | `py -m pip install -r requirements.txt` |
-| `AuthenticationError` | API key sai | Kiểm tra lại `.env` |
-| SDK `❌ chưa cài` trong launcher | Chưa cài perceval/qudora | Chạy launcher → chọn backend → chọn cài ngay |
-| `python-dotenv could not parse line 35` | `.env` có dòng text không hợp lệ | Kiểm tra `.env` chỉ có dạng `KEY=VALUE` |
+| Error | Cause | Solution |
+|-------|-------|----------|
+| `Port already in use` | Port 7860 is occupied | Close the old app or change the port in `server.py` |
+| `ModuleNotFoundError: crewai` | Dependencies not installed | `py -m pip install -r requirements.txt` |
+| `AuthenticationError` | Invalid API key | Check `.env` again |
+| SDK `❌ not installed` in launcher | perceval/qudora not installed | Run launcher → select backend → choose to install now |
+| `python-dotenv could not parse line 35` | `.env` has an invalid text line | Check that `.env` only has `KEY=VALUE` format |
 
 ---
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Quick Start Script - AML AI Copilot
-Chạy nhanh để kiểm tra hệ thống
+Run quickly to check the system
 """
 import sys
 import os
@@ -11,8 +11,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 def check_environment():
-    """Kiểm tra môi trường và dependencies"""
-    print("🔍 Đang kiểm tra môi trường...\n")
+    """Check environment and dependencies"""
+    print("🔍 Checking environment...\n")
     
     issues = []
     
@@ -20,7 +20,7 @@ def check_environment():
     import sys
     py_version = sys.version_info
     if py_version < (3, 10):
-        issues.append(f"❌ Python version {py_version.major}.{py_version.minor} quá thấp (cần >= 3.10)")
+        issues.append(f"❌ Python version {py_version.major}.{py_version.minor} is too low (requires >= 3.10)")
     else:
         print(f"✅ Python {py_version.major}.{py_version.minor}.{py_version.micro}")
     
@@ -37,14 +37,14 @@ def check_environment():
             __import__(module if module != 'dotenv' else 'dotenv')
             print(f"✅ {name}")
         except ImportError:
-            issues.append(f"❌ {name} chưa cài đặt")
-            print(f"❌ {name} - Chạy: py -m pip install {module if module != 'dotenv' else 'python-dotenv'}")
+            issues.append(f"❌ {name} is not installed")
+            print(f"❌ {name} - Run: py -m pip install {module if module != 'dotenv' else 'python-dotenv'}")
     
     # Check .env file
     from dotenv import load_dotenv
     env_file = Path(__file__).parent / '.env'
     if env_file.exists():
-        print(f"✅ File .env tồn tại")
+        print(f"✅ .env file exists")
         load_dotenv()
         
         # Check critical keys
@@ -52,20 +52,20 @@ def check_environment():
         for key in keys_to_check:
             value = os.getenv(key, '')
             if value and value != f'your_{key.lower()}_here':
-                print(f"✅ {key} đã được cấu hình")
+                print(f"✅ {key} is configured")
             else:
-                issues.append(f"⚠️  {key} chưa được cấu hình (có thể dùng DEMO_MODE)")
+                issues.append(f"⚠️  {key} is not configured (can use DEMO_MODE)")
     else:
-        issues.append("❌ File .env không tồn tại - Copy từ .env.example")
+        issues.append("❌ .env file does not exist - Copy from .env.example")
     
     print()
     if issues:
-        print("⚠️  CÓ VẤN ĐỀ CẦN KHẮC PHỤC:")
+        print("⚠️  ISSUES TO FIX:")
         for issue in issues:
             print(f"  {issue}")
         print()
     else:
-        print("✨ Tất cả kiểm tra đều pass!\n")
+        print("✨ All checks passed!\n")
     
     return len(issues) == 0
 
@@ -93,7 +93,7 @@ def test_qubo():
         print(f"     - Runtime: {result.runtime_seconds:.2f}s")
         return True
     except Exception as e:
-        print(f"  ❌ Lỗi: {e}")
+        print(f"  ❌ Error: {e}")
         return False
 
 
@@ -103,7 +103,7 @@ def test_pipeline():
     try:
         from src.pipeline.handler import handler
         
-        # Test với demo mode
+        # Test with demo mode
         os.environ['DEMO_MODE'] = 'true'
         
         event = {
@@ -125,7 +125,7 @@ def test_pipeline():
         print(f"     - Runtime: {result['runtime_seconds']:.2f}s")
         return True
     except Exception as e:
-        print(f"  ❌ Lỗi: {e}")
+        print(f"  ❌ Error: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -142,40 +142,40 @@ def main():
     # Step 1: Check environment
     env_ok = check_environment()
     if not env_ok:
-        print("\n⚠️  Vui lòng khắc phục các vấn đề trên trước khi tiếp tục.")
-        print("📖 Xem hướng dẫn chi tiết: HUONG_DAN_CHAY_FULL_PROJECT.md")
+        print("\n⚠️  Please fix the above issues before continuing.")
+        print("📖 See full guide: FULL_PROJECT_GUIDE.md")
         return
     
     # Step 2: Test QUBO
     qubo_ok = test_qubo()
     if not qubo_ok:
-        print("\n❌ QUBO test failed. Kiểm tra logs ở trên.")
+        print("\n❌ QUBO test failed. Check the logs above.")
         return
     
     # Step 3: Test Pipeline
     pipeline_ok = test_pipeline()
     if not pipeline_ok:
-        print("\n❌ Pipeline test failed. Kiểm tra logs ở trên.")
+        print("\n❌ Pipeline test failed. Check the logs above.")
         return
     
     # Success!
     print()
     print("="*70)
-    print("  ✨ TẤT CẢ TESTS ĐỀU PASS!")
+    print("  ✨ ALL TESTS PASSED!")
     print("="*70)
     print()
-    print("🎯 BẠN CÓ THỂ:")
-    print("  1. Chạy demo simulation:")
+    print("🎯 YOU CAN:")
+    print("  1. Run demo simulation:")
     print("     cd DEMOCORE")
     print("     py 03_qubo_sim.py serve 8765")
     print()
-    print("  2. Phân tích wallet cụ thể:")
+    print("  2. Analyze specific wallet:")
     print("     py analyze_wallet.py 0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b")
     print()
-    print("  3. Chạy web server:")
+    print("  3. Run web server:")
     print("     py server.py")
     print()
-    print("📖 Xem hướng dẫn đầy đủ: HUONG_DAN_CHAY_FULL_PROJECT.md")
+    print("📖 See full guide: FULL_PROJECT_GUIDE.md")
     print()
 
 
