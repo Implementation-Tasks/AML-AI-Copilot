@@ -827,6 +827,126 @@
       text-align: right;
     }
 
+    .ciws-banner {
+      background: linear-gradient(90deg, var(--risk-high), #7f1d1d);
+      color: #fff;
+      padding: 16px 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      animation: pulse 1.5s infinite alternate;
+      box-shadow: 0 0 30px rgba(239, 68, 68, 0.4);
+    }
+    
+    .ciws-text h3 {
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .ciws-text p {
+      font-size: 0.85rem;
+      opacity: 0.9;
+    }
+    
+    @keyframes pulse {
+      from { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+      to { box-shadow: 0 0 40px rgba(239, 68, 68, 0.6); transform: scale(1.005); }
+    }
+
+    #topology-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      display: none;
+    }
+    
+    .topology-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .topology-graph {
+      display: flex;
+      align-items: center;
+      padding: 20px 0;
+      min-width: 600px;
+    }
+
+    .tp-node {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tp-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg-secondary);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 0 15px rgba(108, 99, 255, 0.2);
+    }
+
+    .tp-node.high .tp-circle {
+      border-color: var(--risk-high);
+      background: var(--risk-high-bg);
+      box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+    }
+
+    .tp-node.med .tp-circle {
+      border-color: var(--risk-med);
+      background: var(--risk-med-bg);
+    }
+
+    .tp-label {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .tp-node.high .tp-label {
+      color: var(--risk-high);
+      font-weight: 700;
+    }
+
+    .tp-edge {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      position: relative;
+      min-width: 40px;
+      margin: 0 -4px;
+      z-index: 1;
+    }
+
+    .tp-edge::after {
+      content: "▶";
+      position: absolute;
+      right: 4px;
+      top: -8px;
+      color: var(--border);
+      font-size: 0.8rem;
+    }
+
     @keyframes fadeInUp {
       from {
         opacity: 0;
@@ -935,6 +1055,13 @@
     </div>
 
     <div id="result-panel">
+      <div id="ciws-banner" class="ciws-banner">
+        <div class="ciws-text">
+          <h3>🚨 CIWS KILL CHAIN ACTIVATED</h3>
+          <p>QUBO Optimization detected high-risk subgraph. Immediate FREEZE triggered. Analysis Chain continuing in background...</p>
+        </div>
+        <div style="font-size: 2rem;">🛡️</div>
+      </div>
       <div class="case-row">
         <span class="case-label">Case ID:</span>
         <span id="case-id-display">&mdash;</span>
@@ -972,6 +1099,10 @@
           <div class="metric-val" id="runtime-val">&mdash;</div>
           <div class="metric-label">Pipeline Runtime</div>
         </div>
+      </div>
+      <div id="topology-container">
+        <div class="topology-title">&#128279; Network Topology Graph</div>
+        <div class="topology-graph" id="topology-graph"></div>
       </div>
       <div class="findings-card" id="findings-card">
         <div class="findings-title">Agent Investigation Findings</div>
@@ -1322,6 +1453,7 @@
 
       document.getElementById('input-section').style.display = 'none';
       document.getElementById('result-panel').style.display = 'none';
+      document.getElementById('ciws-banner').style.display = 'none';
       const prog = document.getElementById('progress-panel');
       prog.style.display = 'block';
       prog.className = 'fade-in';
@@ -1329,6 +1461,10 @@
       document.getElementById('log-box').textContent = '';
       [1, 2, 3].forEach(n => setStep(n, 0, null));
 
+      let report = DEMO_PAYLOADS[wallet] || await generateGenericReport(wallet);
+      currentReport = report;
+
+      // STEP 1: KILL CHAIN (QUBO)
       appendLog('Initializing SA optimizer | backend=simulated_annealing | beta=0.5');
       await delay(300);
       setStep(1, 20, 'Building 50-node transaction graph...');
@@ -1344,8 +1480,18 @@
       appendLog('SA converged | deriving risk_score for target wallet...');
       await delay(300);
       setStep(1, 100, 'QUBO stage complete ✓');
-      appendLog('[QUBO] Stage complete | FPR=0.0000 | F-beta=1.0000');
+      appendLog(`[QUBO] Stage complete | FPR=0.0000 | F-beta=1.0000 | Score=${report.qubo_risk_score.toFixed(4)}`);
 
+      // CIWS DECOUPLING LOGIC: If HIGH risk, show kill chain immediately.
+      if (report.qubo_risk_score >= 0.85) {
+        appendLog('[CIWS] HIGH RISK SCORE DETECTED. TRIGGERING IMMEDIATE KILL CHAIN (FREEZE).');
+        const banner = document.getElementById('ciws-banner');
+        banner.style.display = 'flex';
+        renderResult(report, true); 
+        banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+
+      // STEP 2: ANALYSIS CHAIN (AGENTS)
       await delay(200);
       setStep(2, 20, 'Flow Tracer: tracing multi-hop cash flows...');
       appendLog('[Agent 1] Multi-hop Flow Tracer activated | max_hops=10');
@@ -1359,17 +1505,17 @@
       setStep(2, 100, 'Agent investigation complete ✓');
       appendLog('[Agents] All 3 agents complete');
 
+      // STEP 3: REPORT
       await delay(200);
       setStep(3, 50, 'Hashing compliance report (SHA-256)...');
       appendLog('[Report] Computing SHA-256 audit hash');
       await delay(400);
       setStep(3, 100, 'Compliance report ready ✓');
-      appendLog('[Report] Done — rendering verdict');
+      appendLog('[Report] Done — rendering full verdict');
       await delay(300);
 
-      let report = DEMO_PAYLOADS[wallet] || await generateGenericReport(wallet);
-      currentReport = report;
-      renderResult(report);
+      document.getElementById('ciws-banner').style.display = 'none'; // hide banner when full report is ready
+      renderResult(report, false);
     }
 
     async function generateGenericReport(wallet) {
@@ -1392,16 +1538,65 @@
         sar_summary: 'Wallet: ' + wallet + '\nRisk: ' + risk + ' | Action: ' + action + '\nQUBO score: ' + score.toFixed(4) + '\nGenerated by AML AI Copilot (QCFinOp, SEA Quantathon 2026)\nPowered by Quapp.cloud',
         runtime_ms: 650 + (sum % 200),
         qubo: { risk_score: score, false_positive_rate: 0.0, f_beta_score: 0.893, graph_nodes: 50, graph_edges: 96, backend_used: 'Simulated Annealing (D-Wave dimod style)' },
-        flow_trace: { hop_count: Math.floor(score * 8), mixer_detected: score > 0.85, mixer_name: score > 0.85 ? 'Tornado Cash' : null, summary: score >= 0.85 ? 'WARNING: Suspicious multi-hop pattern detected via Tornado Cash mixer.' : score >= 0.5 ? 'INFO: Moderate hop count detected. Monitoring recommended.' : 'No suspicious transaction hops detected.' },
+        flow_trace: { hop_count: Math.floor(score * 8), mixer_detected: score > 0.85, mixer_name: score > 0.85 ? 'Tornado Cash' : null, path: [wallet, '0xHOP1', '0xHOP2', '0xEND3'], summary: score >= 0.85 ? 'WARNING: Suspicious multi-hop pattern detected via Tornado Cash mixer.' : score >= 0.5 ? 'INFO: Moderate hop count detected. Monitoring recommended.' : 'No suspicious transaction hops detected.' },
         osint: { sanctions_hit: score >= 0.85, sanctions_list: score >= 0.85 ? 'OFAC SDN List' : null, confidence: score >= 0.85 ? 0.97 : 0.03, summary: score >= 0.85 ? 'SANCTIONS HIT: Wallet matched on OFAC SDN List. Confidence: 97%. Immediate escalation recommended.' : 'No sanctions matches found across OFAC SDN, EU, UN, or CryptoScamDB.' }
       };
     }
 
-    function renderResult(report) {
-      document.getElementById('progress-panel').style.display = 'none';
+    function renderTopologyGraph(report) {
+      const container = document.getElementById('topology-container');
+      const graph = document.getElementById('topology-graph');
+      graph.innerHTML = '';
+      if (!report.flow_trace || !report.flow_trace.path || report.flow_trace.path.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+      container.style.display = 'block';
+      const path = report.flow_trace.path;
+      path.forEach((addr, i) => {
+        const isEnd = i === path.length - 1;
+        const isHighRisk = i > 0 && report.risk_level === 'HIGH';
+        const isMedRisk = i > 0 && report.risk_level === 'MEDIUM';
+
+        const node = document.createElement('div');
+        node.className = 'tp-node ' + (isHighRisk ? 'high' : isMedRisk ? 'med' : '');
+        
+        const circle = document.createElement('div');
+        circle.className = 'tp-circle';
+        if (isHighRisk && i === Math.floor(path.length / 2)) {
+            circle.textContent = '🌪️';
+        } else if (i === 0) {
+            circle.textContent = '👤';
+        } else if (isEnd) {
+            circle.textContent = '🎯';
+        } else {
+            circle.textContent = '⛓️';
+        }
+        
+        const label = document.createElement('div');
+        label.className = 'tp-label';
+        label.textContent = addr.substring(0, 6) + '...' + addr.substring(addr.length - 4);
+        
+        node.appendChild(circle);
+        node.appendChild(label);
+        graph.appendChild(node);
+        
+        if (!isEnd) {
+          const edge = document.createElement('div');
+          edge.className = 'tp-edge';
+          graph.appendChild(edge);
+        }
+      });
+    }
+
+    function renderResult(report, isPartial = false) {
+      if (!isPartial) {
+        document.getElementById('progress-panel').style.display = 'none';
+      }
+      
       const panel = document.getElementById('result-panel');
       panel.style.display = 'block';
-      panel.className = 'fade-in';
+      if (!isPartial) panel.className = 'fade-in';
 
       document.getElementById('case-id-display').textContent = report.case_id;
 
@@ -1433,30 +1628,38 @@
       const gaugePct = Math.min(100, Math.round(quboScore * 100));
       const gaugeColor = risk === 'HIGH' ? 'var(--risk-high)' : risk === 'MEDIUM' ? 'var(--risk-med)' : 'var(--risk-low)';
       document.getElementById('qubo-gauge').style.background = gaugeColor;
-      setTimeout(() => {
-        document.getElementById('qubo-gauge').style.width = gaugePct + '%';
-        document.getElementById('qubo-gauge-pct').textContent = gaugePct + '%';
-      }, 100);
+      
+      // Update gauge immediately for partial renders
+      document.getElementById('qubo-gauge').style.width = gaugePct + '%';
+      document.getElementById('qubo-gauge-pct').textContent = gaugePct + '%';
 
-      const ft = report.flow_trace || {};
-      const os = report.osint || {};
-      document.getElementById('flow-finding').textContent = ft.summary || 'Flow trace complete.';
-      document.getElementById('osint-finding').textContent = os.summary || 'OSINT check complete.';
-      const compText = risk === 'HIGH'
-        ? 'SAR compiled successfully. Audit hash SHA-256 signed. Recommended action: ' + action + '. Report ready for regulatory submission.'
-        : risk === 'MEDIUM'
-          ? 'Enhanced due diligence report filed. Monitoring alert activated. Case escalated for manual review.'
-          : 'Routine compliance check complete. No escalation required. Wallet cleared for normal operations.';
-      document.getElementById('compliance-finding').textContent = compText;
-      document.getElementById('audit-hash-display').textContent = report.audit_hash;
-      document.getElementById('sar-details').textContent = report.sar_summary || '';
-      document.getElementById('findings-card').style.display = risk === 'LOW' ? 'none' : 'block';
-      document.getElementById('toggle-sar-btn').style.display = 'inline-block';
+      renderTopologyGraph(report);
+
+      if (isPartial) {
+         document.getElementById('findings-card').style.display = 'none';
+         document.getElementById('toggle-sar-btn').style.display = 'none';
+      } else {
+         const ft = report.flow_trace || {};
+         const os = report.osint || {};
+         document.getElementById('flow-finding').textContent = ft.summary || 'Flow trace complete.';
+         document.getElementById('osint-finding').textContent = os.summary || 'OSINT check complete.';
+         const compText = risk === 'HIGH'
+           ? 'SAR compiled successfully. Audit hash SHA-256 signed. Recommended action: ' + action + '. Report ready for regulatory submission.'
+           : risk === 'MEDIUM'
+             ? 'Enhanced due diligence report filed. Monitoring alert activated. Case escalated for manual review.'
+             : 'Routine compliance check complete. No escalation required. Wallet cleared for normal operations.';
+         document.getElementById('compliance-finding').textContent = compText;
+         document.getElementById('audit-hash-display').textContent = report.audit_hash;
+         document.getElementById('sar-details').textContent = report.sar_summary || '';
+         document.getElementById('findings-card').style.display = risk === 'LOW' ? 'none' : 'block';
+         document.getElementById('toggle-sar-btn').style.display = 'inline-block';
+      }
     }
 
     function resetUI() {
       document.getElementById('result-panel').style.display = 'none';
       document.getElementById('progress-panel').style.display = 'none';
+      document.getElementById('ciws-banner').style.display = 'none';
       document.getElementById('input-section').style.display = 'block';
       document.getElementById('input-section').className = 'input-card fade-in';
       document.getElementById('sar-details').style.display = 'none';
